@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --brand: #ff6b00;
+  --brand-light: #ff7a1a;
+  --brand-dark: #0a0a0a;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  color: #0a0a0a;
+}
+
+a {
+  color: inherit;
+}
+
+/* Shared page-width wrapper, used instead of Tailwind's max-w-[1440px] mx-auto */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* Horizontally scrollable row (categories, top workers) */
+.scroll-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--brand-dark);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 20px;
+}
+.logo-badge {
+  width: 40px;
+  height: 40px;
+  background: var(--brand);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover {
+  color: var(--brand);
+}
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+}
+
+/* Hero */
+.hero {
+  background: var(--brand-dark);
+  color: #fff;
+  padding: 80px 0;
+}
+.hero-content {
+  max-width: 720px;
+}
+.trust-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-top: 48px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+.trust-point {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Generic section spacing */
+.section {
+  padding: 64px 0;
+}
+.section-title {
+  text-align: center;
+  margin-bottom: 32px !important;
+}
+
+/* Category cards */
+.category-card {
+  width: 160px;
+  flex-shrink: 0;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.category-card:hover {
+  border-color: var(--brand) !important;
+  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.15);
+}
+.category-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 107, 0, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--brand);
+}
+
+/* How it works step badge */
+.step-badge {
+  width: 48px;
+  height: 48px;
+  background: var(--brand);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 24px;
+}
+
+/* Worker cards */
+.worker-card {
+  width: 256px;
+  flex-shrink: 0;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.worker-card:hover {
+  border-color: var(--brand) !important;
+  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.15);
+}
+.worker-avatar {
+  background: linear-gradient(135deg, var(--brand), #ff8c3a);
+  font-size: 24px;
+  margin: 0 auto 16px;
+}
+
+/* Stats band */
+.stats-section {
+  background: var(--brand-dark);
+  color: #fff;
+  padding: 48px 0;
+}
+
+/* Footer */
+.footer {
+  background: var(--brand-dark);
+  color: #fff;
+  padding: 48px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.footer a {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 14px;
+}
+.footer a:hover {
+  color: var(--brand);
+}
