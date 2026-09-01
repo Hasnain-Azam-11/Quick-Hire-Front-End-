@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Upload } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register, isAuthenticated, role: userRole } = useAuth();
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role');
   const [role, setRole] = useState(roleParam === 'worker' ? 'worker' : 'client');
@@ -22,6 +24,16 @@ export default function Register() {
     cnic: null
   });
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (userRole === 'client') {
+        navigate('/client/dashboard', { replace: true });
+      } else {
+        navigate('/worker/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, userRole, navigate]);
+
   const categories = [
     'Domestic Help', 'Childcare', 'Elder Care', 'Event Staffing', 'Cooking',
     'Driving', 'Construction', 'Security', 'Gardening', 'Tutoring',
@@ -30,6 +42,7 @@ export default function Register() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    register(formData, role);
     if (role === 'client') {
       navigate('/client/dashboard');
     } else {

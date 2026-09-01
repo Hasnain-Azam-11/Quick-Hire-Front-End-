@@ -1,37 +1,81 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../components/ui/PasswordInput";
 import GoogleButton from "../components/ui/GoogleButton";
 import { btnPrimary } from "../constants/categories";
+import { useAuth } from "../context/AuthContext";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("worker");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login, isAuthenticated, role: userRole } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (userRole === "client") {
+        navigate("/client/dashboard", { replace: true });
+      } else {
+        navigate("/worker/dashboard", { replace: true });
+      }
+    }
+  }, [isAuthenticated, userRole, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email && password) {
-      navigate("/client/dashboard");
+      login(email, password, role);
+      if (role === "client") {
+        navigate("/client/dashboard");
+      } else {
+        navigate("/worker/dashboard");
+      }
     } else {
-      setError("Invalid email or password");
+      setError("Please fill in both email and password.");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-8">
       <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-2xl">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 bg-[#FF6B00] rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white text-2xl font-bold">Q</span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
+          <h1 className="text-3xl font-bold mb-2 text-[#0A0A0A]">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your QuickHire account</p>
         </div>
 
+        {/* Role Selector Tabs */}
+        <div className="flex gap-2 mb-6 p-1 bg-[#F5F5F5] rounded-xl">
+          <button
+            type="button"
+            onClick={() => setRole("client")}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+              role === "client"
+                ? "bg-white text-[#FF6B00] shadow-sm"
+                : "text-gray-600 hover:text-[#0A0A0A]"
+            }`}
+          >
+            Client Login
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("worker")}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+              role === "worker"
+                ? "bg-white text-[#FF6B00] shadow-sm"
+                : "text-gray-600 hover:text-[#0A0A0A]"
+            }`}
+          >
+            Worker Login
+          </button>
+        </div>
+
         {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-xl mb-6">
+          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-xl mb-6 text-sm">
             {error}
           </div>
         )}
@@ -44,7 +88,7 @@ export default function SignIn() {
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20"
+              className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20 text-sm"
               required
             />
           </div>
@@ -59,13 +103,13 @@ export default function SignIn() {
           </div>
 
           <div className="flex justify-end">
-            <Link to="/sign-in" className="text-sm text-[#FF6B00] hover:underline">
+            <Link to="/sign-in" className="text-sm text-[#FF6B00] hover:underline font-medium">
               Forgot password?
             </Link>
           </div>
 
-          <button type="submit" className={`w-full py-4 ${btnPrimary}`}>
-            Sign In
+          <button type="submit" className={`w-full py-4 ${btnPrimary} cursor-pointer`}>
+            Sign In as {role === "client" ? "Client" : "Worker"}
           </button>
 
           <div className="relative my-6">
@@ -82,7 +126,7 @@ export default function SignIn() {
 
         <div className="mt-8 text-center text-sm text-gray-600">
           Don&apos;t have an account?{" "}
-          <Link to="/register" className="text-[#FF6B00] hover:underline">
+          <Link to={`/register?role=${role}`} className="text-[#FF6B00] hover:underline font-semibold">
             Register here
           </Link>
         </div>
