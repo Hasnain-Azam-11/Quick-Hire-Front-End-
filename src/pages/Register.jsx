@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { Upload } from 'lucide-react';
+import { Upload, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
@@ -23,6 +23,12 @@ export default function Register() {
     experience: 0,
     cnic: null
   });
+
+  useEffect(() => {
+    if (roleParam === 'worker') {
+      setRole('worker');
+    }
+  }, [roleParam]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -58,52 +64,79 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-white flex">
+      {/* Left Banner */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0A0A0A] text-white p-16 flex-col justify-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-64 h-64 bg-[#FF6B00] rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#FF6B00] rounded-full blur-3xl"></div>
         </div>
         <div className="relative z-10">
-          <h2 className="text-5xl mb-6">Join QuickHire Today</h2>
+          <h2 className="text-5xl font-extrabold mb-6">Join QuickHire Today</h2>
           <p className="text-xl text-gray-300 mb-8">
             {role === 'client'
               ? 'Connect with thousands of verified workers across Pakistan'
               : 'Start earning by offering your skills to clients nationwide'}
           </p>
-          <div className="space-y-4 text-gray-400">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
-              <span>Verified profiles and secure payments</span>
+
+          {role === 'worker' ? (
+            <div className="space-y-4 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xs">
+              <h3 className="text-[#FF6B00] font-bold text-base uppercase tracking-wider">How to Start Earning</h3>
+              <div className="space-y-3 text-sm text-gray-300">
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#FF6B00] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">1</span>
+                  <span>Create your account</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#FF6B00] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">2</span>
+                  <span>Add the skills you offer</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#FF6B00] text-white font-bold text-xs flex items-center justify-center flex-shrink-0">3</span>
+                  <span>Go on duty and start receiving job requests</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
-              <span>AI-powered matching for best results</span>
+          ) : (
+            <div className="space-y-4 text-gray-400">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
+                <span>Verified profiles and secure payments</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
+                <span>AI-powered matching for best results</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
+                <span>24/7 customer support</span>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-[#FF6B00] rounded-full"></div>
-              <span>24/7 customer support</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
+      {/* Right Form Container */}
       <div className="w-full lg:w-1/2 p-8 lg:p-16 overflow-y-auto">
         <div className="max-w-md mx-auto">
           <div className="mb-8">
             <Link to="/" className="flex items-center gap-2 mb-6">
               <div className="w-10 h-10 bg-[#FF6B00] rounded-lg flex items-center justify-center">
-                <span className="text-white text-xl">Q</span>
+                <span className="text-white text-xl font-bold">Q</span>
               </div>
-              <span className="text-xl text-[#0A0A0A]">QuickHire</span>
+              <span className="text-xl font-extrabold text-[#0A0A0A]">QuickHire</span>
             </Link>
-            <h1 className="text-3xl mb-2">Create Account</h1>
+            <h1 className="text-3xl font-bold mb-2 text-[#0A0A0A]">
+              {role === 'worker' ? 'Start Earning as a Worker' : 'Create Account'}
+            </h1>
             <p className="text-gray-600">Get started with QuickHire</p>
           </div>
 
-          <div className="flex gap-2 mb-8 p-1 bg-[#F5F5F5] rounded-xl">
+          {/* Role Selector Tabs */}
+          <div className="flex gap-2 mb-6 p-1 bg-[#F5F5F5] rounded-xl">
             <button
+              type="button"
               onClick={() => setRole('client')}
-              className={`flex-1 py-3 rounded-lg transition-all ${
+              className={`flex-1 py-3 font-semibold text-sm rounded-lg transition-all cursor-pointer ${
                 role === 'client'
                   ? 'bg-white text-[#FF6B00] shadow-sm'
                   : 'text-gray-600 hover:text-[#0A0A0A]'
@@ -112,16 +145,38 @@ export default function Register() {
               Client
             </button>
             <button
+              type="button"
               onClick={() => setRole('worker')}
-              className={`flex-1 py-3 rounded-lg transition-all ${
+              className={`flex-1 py-3 font-semibold text-sm rounded-lg transition-all cursor-pointer ${
                 role === 'worker'
                   ? 'bg-white text-[#FF6B00] shadow-sm'
                   : 'text-gray-600 hover:text-[#0A0A0A]'
               }`}
             >
-              Worker
+              Worker (Start Earning)
             </button>
           </div>
+
+          {/* Mobile 3-Step Worker Onboarding Guide Banner */}
+          {role === 'worker' && (
+            <div className="lg:hidden bg-[#FFF0E6] border border-[#FF6B00]/30 rounded-2xl p-4 mb-6 space-y-2">
+              <h3 className="font-bold text-[#FF6B00] text-xs uppercase tracking-wider">How to Start Earning</h3>
+              <div className="space-y-1.5 text-xs text-[#0A0A0A] font-medium">
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-[#FF6B00] text-white font-bold text-[10px] flex items-center justify-center">1</span>
+                  <span>Create your account</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-[#FF6B00] text-white font-bold text-[10px] flex items-center justify-center">2</span>
+                  <span>Add the skills you offer</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 rounded-full bg-[#FF6B00] text-white font-bold text-[10px] flex items-center justify-center">3</span>
+                  <span>Go on duty and start receiving job requests</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -162,11 +217,11 @@ export default function Register() {
 
             {role === 'client' && (
               <div>
-                <label className="block text-sm text-[#0A0A0A] mb-2">Account Type</label>
+                <label className="block text-sm font-medium text-[#0A0A0A] mb-2">Account Type</label>
                 <select
                   value={formData.accountType}
                   onChange={(e) => setFormData({ ...formData, accountType: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20"
+                  className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20 text-sm"
                 >
                   <option value="individual">Individual/Family</option>
                   <option value="organizer">Event Organizer</option>
@@ -178,11 +233,11 @@ export default function Register() {
             {role === 'worker' && (
               <>
                 <div>
-                  <label className="block text-sm text-[#0A0A0A] mb-2">Primary Category</label>
+                  <label className="block text-sm font-medium text-[#0A0A0A] mb-2">Primary Category / Skill Offered</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20"
+                    className="w-full px-4 py-3 bg-[#F5F5F5] border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:border-[#FF6B00] focus:ring-[#FF6B00]/20 text-sm"
                     required
                   >
                     <option value="">Select a category</option>
@@ -193,20 +248,20 @@ export default function Register() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-[#0A0A0A] mb-2">Years of Experience</label>
+                  <label className="block text-sm font-medium text-[#0A0A0A] mb-2">Years of Experience</label>
                   <div className="flex items-center gap-4">
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, experience: Math.max(0, formData.experience - 1) })}
-                      className="w-10 h-10 bg-[#F5F5F5] rounded-lg hover:bg-[#FF6B00] hover:text-white transition-colors"
+                      className="w-10 h-10 bg-[#F5F5F5] rounded-lg border hover:bg-[#FF6B00] hover:text-white transition-colors cursor-pointer font-bold"
                     >
                       -
                     </button>
-                    <span className="text-xl w-16 text-center">{formData.experience}</span>
+                    <span className="text-xl w-16 text-center font-bold text-[#0A0A0A]">{formData.experience} yrs</span>
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, experience: formData.experience + 1 })}
-                      className="w-10 h-10 bg-[#F5F5F5] rounded-lg hover:bg-[#FF6B00] hover:text-white transition-colors"
+                      className="w-10 h-10 bg-[#F5F5F5] rounded-lg border hover:bg-[#FF6B00] hover:text-white transition-colors cursor-pointer font-bold"
                     >
                       +
                     </button>
@@ -214,8 +269,8 @@ export default function Register() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-[#0A0A0A] mb-2">CNIC Upload</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-[#FF6B00] transition-colors">
+                  <label className="block text-sm font-medium text-[#0A0A0A] mb-2">CNIC Upload</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#FF6B00] transition-colors">
                     <input
                       type="file"
                       id="cnic-upload"
@@ -226,13 +281,13 @@ export default function Register() {
                     <label htmlFor="cnic-upload" className="cursor-pointer">
                       {formData.cnic ? (
                         <div className="text-[#22C55E]">
-                          <div className="text-4xl mb-2">✓</div>
-                          <div className="text-sm">{formData.cnic.name}</div>
+                          <div className="text-3xl mb-1">✓</div>
+                          <div className="text-xs font-semibold">{formData.cnic.name}</div>
                         </div>
                       ) : (
                         <div className="text-gray-400">
-                          <Upload className="w-8 h-8 mx-auto mb-2" />
-                          <div className="text-sm">Click to upload CNIC (front & back)</div>
+                          <Upload className="w-7 h-7 mx-auto mb-2 text-[#FF6B00]" />
+                          <div className="text-xs font-medium">Click to upload CNIC (front & back)</div>
                         </div>
                       )}
                     </label>
@@ -263,22 +318,20 @@ export default function Register() {
             />
 
             {role === 'worker' && (
-              <div className="bg-[#FFF0E6] border border-[#FF6B00]/20 rounded-xl p-4 text-sm">
-                <p className="text-[#FF6B00]">
-                  Your account will be reviewed within 24 hours. You'll be notified once verified.
-                </p>
+              <div className="bg-[#FFF0E6] border border-[#FF6B00]/20 rounded-xl p-4 text-xs font-medium text-[#FF6B00]">
+                Your worker profile will be reviewed within 24 hours. You can start receiving job requests immediately after verification.
               </div>
             )}
 
-            <Button type="submit" variant="primary" fullWidth className="py-4">
-              Create Account
+            <Button type="submit" variant="primary" fullWidth className="py-4 font-bold text-sm">
+              {role === 'worker' ? 'Register & Start Earning' : 'Create Account'}
             </Button>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
+              <div className="relative flex justify-center text-xs">
                 <span className="px-4 bg-white text-gray-500">Or continue with</span>
               </div>
             </div>
@@ -287,7 +340,7 @@ export default function Register() {
               type="button"
               variant="outline"
               fullWidth
-              className="py-4 border-gray-200 text-[#0A0A0A] hover:bg-[#F5F5F5]"
+              className="py-3.5 border-gray-200 text-[#0A0A0A] hover:bg-[#F5F5F5] text-xs font-semibold"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -301,7 +354,7 @@ export default function Register() {
 
           <div className="mt-8 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/sign-in" className="text-[#FF6B00] hover:underline">
+            <Link to="/sign-in" className="text-[#FF6B00] hover:underline font-semibold">
               Sign in here
             </Link>
           </div>

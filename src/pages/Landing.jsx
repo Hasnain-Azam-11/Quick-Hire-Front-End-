@@ -1,33 +1,26 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
-import Categories from "../components/Categories";
-import HowItWorks from "../components/HowItWorks";
-import TopWorkers from "../components/TopWorkers";
-import Stats from "../components/Stats";
-import Footer from "../components/Footer";
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import Stats from '../components/Stats';
+import PopularServices from '../components/PopularServices';
+import Testimonials from '../components/Testimonials';
+import SatisfactionGuarantee from '../components/SatisfactionGuarantee';
+import HowItWorks from '../components/HowItWorks';
+import GetHelpTaskMatrix from '../components/GetHelpTaskMatrix';
+import Footer from '../components/Footer';
 
 export default function Landing() {
-  const { isAuthenticated, role } = useAuth();
-
-  if (isAuthenticated) {
-    if (role === "client") {
-      return <Navigate to="/client/dashboard" replace />;
-    }
-    if (role === "worker") {
-      return <Navigate to="/worker/dashboard" replace />;
-    }
-  }
-
+  // ✅ No redirect here — public landing page for everyone
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-sans text-[#0A0A0A] antialiased">
       <Navbar />
       <Hero />
-      <Categories />
-      <HowItWorks />
-      <TopWorkers />
       <Stats />
+      <PopularServices />
+      <Testimonials />
+      <SatisfactionGuarantee />
+      <HowItWorks />
+      <GetHelpTaskMatrix />
       <Footer />
     </div>
   );

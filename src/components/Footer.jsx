@@ -1,71 +1,105 @@
 import { Link } from "react-router-dom";
-import { Row, Col, Typography, Space, Divider } from "antd";
-
-const { Text, Title } = Typography;
+import { Globe, Share2, MessageCircle, Mail, Shield } from "lucide-react";
 
 const footerColumns = [
   {
-    heading: "For Clients",
+    heading: "Discover",
     links: [
-      { label: "Find Workers", to: "/browse-workers" },
-      { label: "Post a Job", to: "/post-job" },
-      { label: "How It Works", to: "/how-it-works" },
-    ],
-  },
-  {
-    heading: "For Workers",
-    links: [
-      { label: "Find Jobs", to: "/browse-jobs" },
-      { label: "Sign Up", to: "/register?role=worker" },
-      { label: "Get Verified", to: "/verification" },
+      { label: "Become a Worker", to: "/register?role=worker" },
+      { label: "Services By City", to: "/#services" },
+      { label: "Elite Workers", to: "/#services" },
+      { label: "Help Nearby", to: "/register?role=client" },
     ],
   },
   {
     heading: "Company",
     links: [
-      { label: "About Us", to: "/about" },
-      { label: "Contact", to: "/contact" },
-      { label: "Admin Login", to: "/admin-dashboard" },
+      { label: "About Us", to: "/#services" },
+      { label: "Careers", to: "/register" },
+      { label: "Press & News", to: "/#services" },
+      { label: "Terms & Privacy", to: "/#services" },
+    ],
+  },
+  {
+    heading: "For Clients",
+    links: [
+      { label: "How It Works", to: "/#how-it-works" },
+      { label: "Happiness Guarantee", to: "/#services" },
+      { label: "Safety & Verification", to: "/register?role=client" },
+    ],
+  },
+  {
+    heading: "Support",
+    links: [
+      { label: "Help Center", to: "/sign-in" },
+      { label: "Contact Us", to: "/sign-in" },
+      { label: "Admin Login", to: "/admin/dashboard" },
     ],
   },
 ];
 
 export default function Footer() {
   return (
-    <footer className="footer">
-      <div className="container">
-        <Row gutter={[32, 32]} style={{ marginBottom: 32 }}>
-          <Col xs={24} md={6}>
-            <Space align="center" style={{ marginBottom: 16 }}>
-              <span className="logo-badge">Q</span>
-              <Title level={4} style={{ color: "#fff", margin: 0 }}>
-                QuickHire
-              </Title>
-            </Space>
-            <Text style={{ color: "#9ca3af", fontSize: 14 }}>
-              Pakistan's trusted platform for short-term labor hiring.
-            </Text>
-          </Col>
+    <footer className="bg-[#14202E] text-white pt-16 pb-8 border-t border-white/10">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-12 space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          
+          {/* Brand & Mission Col */}
+          <div className="md:col-span-1 space-y-4">
+            <Link to="/" className="flex items-center gap-3 text-white text-xl font-extrabold tracking-tight">
+              <div className="w-9 h-9 bg-[#FF6B00] rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md">
+                Q
+              </div>
+              <span className="text-white text-2xl font-bold">QuickHire</span>
+            </Link>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Pakistan's leading platform for daily & short-term labor hiring. Connecting verified workers with clients.
+            </p>
+          </div>
 
-          {footerColumns.map((column) => (
-            <Col xs={24} md={6} key={column.heading}>
-              <Title level={5} style={{ color: "#fff", marginBottom: 16 }}>
-                {column.heading}
-              </Title>
-              <Space orientation="vertical" size={8}>
-                {column.links.map((link) => (
-                  <Link key={link.label} to={link.to}>
-                    {link.label}
-                  </Link>
-                ))}
-              </Space>
-            </Col>
-          ))}
-        </Row>
-        <Divider style={{ borderColor: "rgba(255,255,255,0.1)" }} />
-        <div style={{ textAlign: "center", color: "#9ca3af", fontSize: 14 }}>
-          © 2026 QuickHire. All rights reserved.
+          {/* 4 Multi-Column Links */}
+          <div className="md:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-8">
+            {footerColumns.map((col) => (
+              <div key={col.heading} className="space-y-3">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">{col.heading}</h4>
+                <ul className="space-y-2 text-xs">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link to={link.to} className="text-gray-400 hover:text-[#FF6B00] transition-colors">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
         </div>
+
+        {/* Bottom Bar: App Store Badges, Social Icons & Copyright */}
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-[#FF6B00]" />
+            <span>© 2026 QuickHire Inc. All rights reserved.</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#FF6B00] hover:text-white transition-colors">
+              <Globe className="w-4 h-4" />
+            </a>
+            <a href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#FF6B00] hover:text-white transition-colors">
+              <Share2 className="w-4 h-4" />
+            </a>
+            <a href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#FF6B00] hover:text-white transition-colors">
+              <MessageCircle className="w-4 h-4" />
+            </a>
+            <a href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#FF6B00] hover:text-white transition-colors">
+              <Mail className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+
       </div>
     </footer>
   );

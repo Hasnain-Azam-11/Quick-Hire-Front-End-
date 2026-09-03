@@ -1,23 +1,13 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+
+// ===== PUBLIC PAGES =====
 import Landing from './pages/Landing';
 import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import WorkerProfile from './pages/WorkerProfile';
-import AIRecommendations from './pages/AIRecommendations';
-import BookingDetail from './pages/BookingDetail';
-import Review from './pages/Review';
-import AdminDashboard from './pages/AdminDashboard';
-import ProtectedRoute from './components/ProtectedRoute';
 
-import WorkerLayout from './layouts/WorkerLayout';
-import WorkerHome from './pages/worker/WorkerHome';
-import WorkerBrowseJobs from './pages/worker/WorkerBrowseJobs';
-import WorkerApplications from './pages/worker/WorkerApplications';
-import WorkerSchedule from './pages/worker/WorkerSchedule';
-import WorkerReviews from './pages/worker/WorkerReviews';
-import WorkerSettings from './pages/worker/WorkerSettings';
-
+// ===== CLIENT PAGES =====
 import ClientLayout from './layouts/ClientLayout';
 import ClientHome from './pages/client/ClientHome';
 import ClientPostJob from './pages/client/ClientPostJob';
@@ -26,41 +16,66 @@ import ClientMyJobs from './pages/client/ClientMyJobs';
 import ClientReviews from './pages/client/ClientReviews';
 import ClientSettings from './pages/client/ClientSettings';
 
+// ===== WORKER PAGES =====
+import WorkerLayout from './layouts/WorkerLayout';
+import WorkerHome from './pages/worker/WorkerHome';
+import WorkerBrowseJobs from './pages/worker/WorkerBrowseJobs';
+import WorkerApplications from './pages/worker/WorkerApplications';
+import WorkerSchedule from './pages/worker/WorkerSchedule';
+import WorkerReviews from './pages/worker/WorkerReviews';
+import WorkerSettings from './pages/worker/WorkerSettings';
+
+// ===== OTHER PAGES =====
+import AIRecommendations from './pages/AIRecommendations';
+import BookingDetail from './pages/BookingDetail';
+import Review from './pages/Review';
+import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+
+// ===== DASHBOARD REDIRECT =====
 function DashboardRedirect() {
   const { isAuthenticated, role } = useAuth();
+
   if (!isAuthenticated) {
     return <Navigate to="/sign-in" replace />;
   }
+
   if (role === 'client') {
     return <Navigate to="/client/dashboard" replace />;
   }
+
   return <Navigate to="/worker/dashboard" replace />;
 }
 
+// ===== ROUTER =====
 export const router = createBrowserRouter([
-  // Public Routes
+  // ============================
+  // 1. PUBLIC ROUTES
+  // ============================
   {
     path: '/',
-    Component: Landing
-  },
-  {
-    path: '/dashboard',
-    element: <DashboardRedirect />
+    element: <Landing />,
   },
   {
     path: '/sign-in',
-    Component: SignIn
+    element: <SignIn />,
   },
   {
     path: '/register',
-    Component: Register
+    element: <Register />,
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardRedirect />,
   },
   {
     path: '/worker-profile/:id',
-    Component: WorkerProfile
+    element: <WorkerProfile />,
   },
 
-  // Protected Client Routes
+  // ============================
+  // 2. CLIENT ROUTES (Protected)
+  // ============================
   {
     element: <ProtectedRoute allowedRole="client" />,
     children: [
@@ -69,55 +84,61 @@ export const router = createBrowserRouter([
         element: <ClientLayout />,
         children: [
           {
+            index: true,
+            element: <Navigate to="/client/dashboard" replace />,
+          },
+          {
             path: 'dashboard',
-            element: <ClientHome />
+            element: <ClientHome />,
           },
           {
             path: 'post-job',
-            element: <ClientPostJob />
+            element: <ClientPostJob />,
           },
           {
             path: 'workers',
-            element: <ClientBrowseWorkers />
+            element: <ClientBrowseWorkers />,
           },
           {
             path: 'jobs',
-            element: <ClientMyJobs />
+            element: <ClientMyJobs />,
           },
           {
             path: 'reviews',
-            element: <ClientReviews />
+            element: <ClientReviews />,
           },
           {
             path: 'settings',
-            element: <ClientSettings />
+            element: <ClientSettings />,
           },
           {
             path: '*',
-            element: <Navigate to="/client/dashboard" replace />
-          }
-        ]
+            element: <Navigate to="/client/dashboard" replace />,
+          },
+        ],
       },
       {
         path: '/client/ai-recommendations',
-        Component: AIRecommendations
+        element: <AIRecommendations />,
       },
       {
         path: '/client/bookings/:id',
-        Component: BookingDetail
+        element: <BookingDetail />,
       },
       {
         path: '/post-job',
-        element: <Navigate to="/client/post-job" replace />
+        element: <Navigate to="/client/post-job" replace />,
       },
       {
         path: '/browse-workers',
-        element: <Navigate to="/client/workers" replace />
-      }
-    ]
+        element: <Navigate to="/client/workers" replace />,
+      },
+    ],
   },
 
-  // Protected Worker Routes
+  // ============================
+  // 3. WORKER ROUTES (Protected)
+  // ============================
   {
     element: <ProtectedRoute allowedRole="worker" />,
     children: [
@@ -126,57 +147,71 @@ export const router = createBrowserRouter([
         element: <WorkerLayout />,
         children: [
           {
+            index: true,
+            element: <Navigate to="/worker/dashboard" replace />,
+          },
+          {
             path: 'dashboard',
-            element: <WorkerHome />
+            element: <WorkerHome />,
           },
           {
             path: 'jobs',
-            element: <WorkerBrowseJobs />
+            element: <WorkerBrowseJobs />,
           },
           {
             path: 'applications',
-            element: <WorkerApplications />
+            element: <WorkerApplications />,
           },
           {
             path: 'schedule',
-            element: <WorkerSchedule />
+            element: <WorkerSchedule />,
           },
           {
             path: 'reviews',
-            element: <WorkerReviews />
+            element: <WorkerReviews />,
           },
           {
             path: 'settings',
-            element: <WorkerSettings />
+            element: <WorkerSettings />,
           },
           {
             path: '*',
-            element: <Navigate to="/worker/dashboard" replace />
-          }
-        ]
+            element: <Navigate to="/worker/dashboard" replace />,
+          },
+        ],
       },
       {
         path: '/browse-jobs',
-        element: <Navigate to="/worker/jobs" replace />
-      }
-    ]
+        element: <Navigate to="/worker/jobs" replace />,
+      },
+    ],
   },
 
-  // Admin Routes
+  // ============================
+  // 4. ADMIN ROUTES
+  // ============================
   {
     path: '/admin/dashboard',
-    Component: AdminDashboard
+    element: <AdminDashboard />,
   },
   {
     path: '/admin/login',
-    Component: SignIn
+    element: <SignIn />,
   },
+
+  // ============================
+  // 5. OTHER ROUTES
+  // ============================
   {
     path: '/review/:id',
-    Component: Review
+    element: <Review />,
   },
+
+  // ============================
+  // 6. FALLBACK (404)
+  // ============================
   {
     path: '*',
-    element: <Navigate to="/" replace />
-  }
+    element: <Navigate to="/" replace />,
+  },
 ]);
