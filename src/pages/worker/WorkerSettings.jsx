@@ -3,12 +3,9 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { CheckCircle2, User, Phone, MapPin, Briefcase, Award } from 'lucide-react';
+import { CATEGORIES } from '../../constants/categories';
 
-const availableCategories = [
-  'Domestic Help', 'Childcare', 'Elder Care', 'Event Staffing', 'Cooking',
-  'Driving', 'Construction', 'Security', 'Gardening', 'Tutoring',
-  'Beauty', 'Handyman', 'Moving', 'Office Support'
-];
+const availableCategories = CATEGORIES;
 
 export default function WorkerSettings() {
   const { user, updateProfile } = useAuth();

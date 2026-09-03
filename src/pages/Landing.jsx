@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
+import Categories from '../components/Categories';
 import Stats from '../components/Stats';
 import PopularServices from '../components/PopularServices';
 import Testimonials from '../components/Testimonials';
@@ -15,6 +16,7 @@ export default function Landing() {
     <div className="min-h-screen bg-white font-sans text-[#0A0A0A] antialiased">
       <Navbar />
       <Hero />
+      <Categories />
       <Stats />
       <PopularServices />
       <Testimonials />

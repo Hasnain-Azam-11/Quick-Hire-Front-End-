@@ -1,21 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useClientData } from '../../context/ClientDataContext';
 import { CategoryChip } from '../../components/CategoryChip';
 import { StarRating } from '../../components/StarRating';
 import { Button } from '../../components/Button';
 import { Avatar } from '../../components/Avatar';
 import { Filter, Send, X, CheckCircle2, Search, MapPin, Award } from 'lucide-react';
+import { CATEGORIES } from '../../constants/categories';
 
-const categories = ['All', 'Domestic Help', 'Childcare', 'Driving', 'Cooking', 'Handyman', 'Event Staffing'];
+const categories = ['All', ...CATEGORIES];
 const cities = ['All Cities', 'Karachi', 'Lahore', 'Islamabad'];
 
 export default function ClientBrowseWorkers() {
   const { workers, sendOffer } = useClientData();
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  const subParam = searchParams.get('sub');
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [minRating, setMinRating] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (categoryParam) {
+      const match = categories.find(
+        (c) =>
+          c.toLowerCase() === categoryParam.toLowerCase() ||
+          c.toLowerCase().replace(/\s+/g, '_') === categoryParam.toLowerCase() ||
+          c.toLowerCase().replace(/_/g, ' ') === categoryParam.toLowerCase()
+      );
+      if (match) setSelectedCategory(match);
+    }
+    if (subParam) {
+      setSearchQuery(subParam);
+    }
+  }, [categoryParam, subParam]);
 
   // Modal State
   const [selectedWorkerForOffer, setSelectedWorkerForOffer] = useState(null);

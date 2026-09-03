@@ -4,12 +4,9 @@ import { useClientData } from '../../context/ClientDataContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { PlusCircle, CheckCircle2 } from 'lucide-react';
+import { CATEGORIES } from '../../constants/categories';
 
-const categories = [
-  'Domestic Help', 'Childcare', 'Elder Care', 'Event Staffing', 'Cooking',
-  'Driving', 'Construction', 'Security', 'Gardening', 'Tutoring',
-  'Beauty', 'Handyman', 'Moving', 'Office Support'
-];
+const categories = CATEGORIES;
 
 const cities = ['Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad', 'Peshawar', 'Multan'];
 

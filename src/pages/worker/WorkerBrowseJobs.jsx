@@ -3,8 +3,9 @@ import { useWorkerData } from '../../context/WorkerDataContext';
 import { CategoryChip } from '../../components/CategoryChip';
 import { Button } from '../../components/Button';
 import { Filter, Users, Search, CheckCircle2 } from 'lucide-react';
+import { CATEGORIES } from '../../constants/categories';
 
-const categories = ['All', 'Domestic Help', 'Childcare', 'Driving', 'Cooking', 'Construction', 'Event Staffing', 'Handyman'];
+const categories = ['All', ...CATEGORIES];
 const cities = ['All Cities', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi'];
 const durations = ['All', '1 day', '2 days', '3 months', '6 months', 'Ongoing'];
 

@@ -6,6 +6,7 @@ import Landing from './pages/Landing';
 import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import WorkerProfile from './pages/WorkerProfile';
+import CategoryPage from './pages/CategoryPage';
 
 // ===== CLIENT PAGES =====
 import ClientLayout from './layouts/ClientLayout';
@@ -71,6 +72,10 @@ export const router = createBrowserRouter([
   {
     path: '/worker-profile/:id',
     element: <WorkerProfile />,
+  },
+  {
+    path: '/categories/:categorySlug',
+    element: <CategoryPage />,
   },
 
   // ============================

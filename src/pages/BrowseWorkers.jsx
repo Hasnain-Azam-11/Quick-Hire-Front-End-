@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Avatar } from '../components/Avatar';
 import { CategoryChip } from '../components/CategoryChip';
 import { StarRating } from '../components/StarRating';
 import { Button } from '../components/Button';
 import { Filter } from 'lucide-react';
+import { CATEGORIES } from '../constants/categories';
 
 const workers = [
   {
@@ -82,14 +83,28 @@ const workers = [
   }
 ];
 
-const categories = ['All', 'Domestic Help', 'Childcare', 'Driving', 'Cooking', 'Construction', 'Security'];
+const categories = ['All', ...CATEGORIES];
 const cities = ['All Cities', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'];
 const ratings = ['All Ratings', '5 Stars', '4+ Stars', '3+ Stars'];
 
 export default function BrowseWorkers() {
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedRating, setSelectedRating] = useState('All Ratings');
+
+  useEffect(() => {
+    if (categoryParam) {
+      const match = categories.find(
+        (c) =>
+          c.toLowerCase() === categoryParam.toLowerCase() ||
+          c.toLowerCase().replace(/\s+/g, '_') === categoryParam.toLowerCase() ||
+          c.toLowerCase().replace(/_/g, ' ') === categoryParam.toLowerCase()
+      );
+      if (match) setSelectedCategory(match);
+    }
+  }, [categoryParam]);
 
   return (
     <div className="flex min-h-screen bg-[#F5F5F5]">

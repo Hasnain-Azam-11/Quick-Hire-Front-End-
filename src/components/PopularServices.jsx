@@ -6,24 +6,24 @@ import heroShowcaseImg from "../assets/hero_showcase.png";
 const projects = [
   {
     id: 1,
-    title: "Furniture Assembly",
+    title: "Personal Driver Services",
     startingRate: "1,500",
     image: heroShowcaseImg,
-    category: "Assembly"
+    category: "Driving"
   },
   {
     id: 2,
-    title: "TV & Wall Mounting",
+    title: "Plumbing & Sink Repairs",
     startingRate: "1,800",
     image: handymanImg,
-    category: "Mounting"
+    category: "Handyman"
   },
   {
     id: 3,
-    title: "House & Deep Cleaning",
+    title: "Babysitting & Childcare",
     startingRate: "1,200",
     image: cleaningImg,
-    category: "Cleaning"
+    category: "Childcare"
   },
   {
     id: 4,
@@ -34,31 +34,31 @@ const projects = [
   },
   {
     id: 5,
-    title: "Plumbing & Sink Repairs",
+    title: "Home Cook & Meal Prep",
     startingRate: "1,600",
     image: handymanImg,
-    category: "Handyman"
+    category: "Cooking"
   },
   {
     id: 6,
     title: "Yard Work & Mowing",
     startingRate: "1,400",
     image: cleaningImg,
-    category: "Outdoor"
+    category: "Gardening"
   },
   {
     id: 7,
-    title: "Interior Painting",
+    title: "Event & Party Staffing",
     startingRate: "2,200",
     image: handymanImg,
-    category: "Painting"
+    category: "Event Staffing"
   },
   {
     id: 8,
-    title: "Heavy Lifting & Rearranging",
+    title: "At-Home Beauty & Salon",
     startingRate: "1,500",
     image: heroShowcaseImg,
-    category: "Moving"
+    category: "Beauty"
   }
 ];
 

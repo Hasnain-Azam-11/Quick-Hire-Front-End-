@@ -2,14 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  Wrench,
-  Tv,
+  Car,
   Package,
-  Sparkles,
-  Trees,
   Hammer,
-  Paintbrush,
-  Flame,
+  Baby,
+  Users,
+  Sparkles,
+  ChefHat,
+  Construction,
+  Shield,
+  Trees,
+  GraduationCap,
+  Building2,
   CheckCircle2,
   ArrowRight
 } from "lucide-react";
@@ -17,28 +21,16 @@ import heroShowcaseImg from "../assets/hero_showcase.png";
 
 const categories = [
   {
-    id: "assembly",
-    label: "Assembly",
-    icon: Wrench,
-    title: "Assembly Services",
+    id: "driving",
+    label: "Driving",
+    icon: Car,
+    title: "Professional Driving Services",
     bullets: [
-      "Assemble or disassemble furniture items (beds, dressers, desks, tables)",
-      "Experienced with flat-pack & complex home fixtures",
-      "All necessary tools & equipment brought to your doorstep"
+      "Personal driver for daily commutes or long-distance travel",
+      "Chauffeur services for special events & airport pickups",
+      "Background-checked, licensed, and experienced drivers"
     ],
-    pills: ["Furniture Assembly", "IKEA Assembly", "Bed Frame Assembly", "Desk Assembly"]
-  },
-  {
-    id: "mounting",
-    label: "Mounting",
-    icon: Tv,
-    title: "TV & Wall Mounting",
-    bullets: [
-      "Secure wall mounting for TVs of all sizes onto drywall or brick",
-      "Hang heavy mirrors, artwork, shelves, and window blinds",
-      "Conceal wiring for a clean, professional finish"
-    ],
-    pills: ["TV Mounting", "Wall Shelves", "Mirror Hanging", "Curtain Rods"]
+    pills: ["Personal Driver", "Chauffeur", "Airport Pickups", "Outstation Driver"]
   },
   {
     id: "moving",
@@ -53,70 +45,142 @@ const categories = [
     pills: ["Furniture Removal", "Heavy Lifting", "Truck Loading", "Office Moving"]
   },
   {
-    id: "cleaning",
-    label: "Cleaning",
-    icon: Sparkles,
-    title: "House & Deep Cleaning",
-    bullets: [
-      "Routine room cleaning, kitchen degreasing, and floor scrubbing",
-      "Move-in / move-out deep cleaning for apartments & houses",
-      "Safe eco-friendly cleaning supplies provided upon request"
-    ],
-    pills: ["House Cleaning", "Deep Clean", "Move-Out Clean", "Kitchen Cleaning"]
-  },
-  {
-    id: "outdoor",
-    label: "Outdoor Help",
-    icon: Trees,
-    title: "Yard Work & Gardening",
-    bullets: [
-      "Lawn mowing, hedge trimming, weed removal, and yard cleanup",
-      "Patio pressure washing and outdoor furniture setup",
-      "Seasonal garden maintenance and plant care"
-    ],
-    pills: ["Lawn Mowing", "Yard Cleanup", "Hedge Trimming", "Garden Care"]
-  },
-  {
-    id: "repairs",
-    label: "Home Repairs",
+    id: "handyman",
+    label: "Handyman",
     icon: Hammer,
-    title: "Handyman & Repairs",
+    title: "Handyman & Home Repairs",
     bullets: [
       "Door lock replacements, minor drywall patching, and cabinet fixes",
       "Plumbing repairs for leaking faucets, sinks, and drains",
       "Light electrical fixture and ceiling fan installations"
     ],
-    pills: ["AC Repair", "Plumbing Fix", "Locksmith", "Drywall Patching"]
+    pills: ["Plumbing Fix", "AC Repair", "Locksmith", "Drywall Patching"]
   },
   {
-    id: "painting",
-    label: "Painting",
-    icon: Paintbrush,
-    title: "Interior Painting",
+    id: "childcare",
+    label: "Childcare",
+    icon: Baby,
+    title: "Babysitting & Childcare",
     bullets: [
-      "Accent walls, full room interior painting, and trim touch-ups",
-      "Surface preparation, caulking, and furniture protection dropcloths",
-      "Precision lines and clean finish without mess"
+      "Experienced, vetted babysitters for infants and toddlers",
+      "After-school care, homework help, and supervision",
+      "Flexible hourly babysitting for day or night"
     ],
-    pills: ["Accent Wall", "Room Painting", "Trim Touch-Up", "Fence Paint"]
+    pills: ["Babysitter", "Nanny Care", "After-School Care", "Infant Care"]
   },
   {
-    id: "trending",
-    label: "Trending",
-    icon: Flame,
-    title: "Top Requested Tasks",
+    id: "elder_care",
+    label: "Elder Care",
+    icon: Users,
+    title: "Compassionate Elder Care",
     bullets: [
-      "Book top-rated service providers for urgent same-day help",
-      "Transparent hourly or per-task pricing upfront",
-      "100% Satisfaction guarantee backed by 24/7 customer support"
+      "Daily companionship, mobility assistance, and routine care",
+      "Medication reminders and meal preparation support",
+      "Trained and empathetic caregivers for senior family members"
     ],
-    pills: ["Same-Day Help", "Event Staff", "Driver on Demand", "Baby Sitting"]
+    pills: ["Senior Companionship", "Mobility Assistance", "Daily Home Helper", "Caregiver"]
+  },
+  {
+    id: "event_staffing",
+    label: "Event Staffing",
+    icon: Sparkles,
+    title: "Event & Party Staffing",
+    bullets: [
+      "Professional waiters, hosts, and setup staff for events",
+      "Party cleanup and food presentation support",
+      "Experienced crew for corporate and private gatherings"
+    ],
+    pills: ["Event Waiters", "Party Setup", "Event Host", "Post-Event Cleanup"]
+  },
+  {
+    id: "cooking",
+    label: "Cooking",
+    icon: ChefHat,
+    title: "Home Cook & Meal Prep",
+    bullets: [
+      "Personal home cooks for daily family meals",
+      "Specialized menu preparation for events & dinner parties",
+      "Hygienic, customized cooking suited to your diet"
+    ],
+    pills: ["Daily Home Cook", "Event Catering", "Meal Prep", "Specialty Chef"]
+  },
+  {
+    id: "construction",
+    label: "Construction",
+    icon: Construction,
+    title: "Construction & Labor Help",
+    bullets: [
+      "Skilled and general labor for home renovation projects",
+      "Tile fixing, masonry work, and wall construction",
+      "Material handling and site cleanup services"
+    ],
+    pills: ["Masonry Work", "Renovation Helper", "Tile Fixing", "Site Labor"]
+  },
+  {
+    id: "security",
+    label: "Security",
+    icon: Shield,
+    title: "Security Guard Services",
+    bullets: [
+      "Vetted security personnel for homes & residential areas",
+      "Event security and crowd control services",
+      "Night watchmen and gate security guards"
+    ],
+    pills: ["Home Security Guard", "Event Security", "Night Watchman", "Gate Keeper"]
+  },
+  {
+    id: "gardening",
+    label: "Gardening",
+    icon: Trees,
+    title: "Yard Work & Gardening",
+    bullets: [
+      "Lawn mowing, hedge trimming, weed removal, and yard cleanup",
+      "Patio pressure washing and outdoor plant care",
+      "Seasonal garden maintenance and routine lawn care"
+    ],
+    pills: ["Lawn Mowing", "Yard Cleanup", "Hedge Trimming", "Garden Maintenance"]
+  },
+  {
+    id: "tutoring",
+    label: "Tutoring",
+    icon: GraduationCap,
+    title: "Home & Online Tutoring",
+    bullets: [
+      "Subject tutors for school, college, and test preparation",
+      "Language learning, math, science, and coding instructors",
+      "Personalized 1-on-1 tutoring sessions"
+    ],
+    pills: ["Math Tutor", "Science Tutor", "Language Teacher", "Exam Prep"]
+  },
+  {
+    id: "beauty",
+    label: "Beauty",
+    icon: Sparkles,
+    title: "At-Home Beauty Services",
+    bullets: [
+      "Professional salon services right at your doorstep",
+      "Hair styling, makeup, manicures & pedicures",
+      "Skincare treatments & bridal packages"
+    ],
+    pills: ["At-Home Salon", "Hair Styling", "Makeup Artist", "Manicure/Pedicure"]
+  },
+  {
+    id: "office_support",
+    label: "Office Support",
+    icon: Building2,
+    title: "Office & Admin Support",
+    bullets: [
+      "Data entry, document filing & office administrative help",
+      "Front desk reception and guest management",
+      "Office errand running and clerical support"
+    ],
+    pills: ["Data Entry", "Office Assistant", "Receptionist", "Office Errand Boy"]
   }
 ];
 
 export default function Hero() {
   const navigate = useNavigate();
-  const [selectedCatId, setSelectedCatId] = useState("assembly");
+  const [selectedCatId, setSelectedCatId] = useState("driving");
   const [searchQuery, setSearchQuery] = useState("");
 
   const activeCategory = categories.find((c) => c.id === selectedCatId) || categories[0];
@@ -162,7 +226,7 @@ export default function Hero() {
 
         {/* Icon Category Navigation Tabs Bar */}
         <div className="border-b border-gray-200 pb-2 max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-2 sm:gap-6 overflow-x-auto scrollbar-none px-2 py-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 px-2 py-2">
             {categories.map((cat) => {
               const IconComp = cat.icon;
               const isActive = cat.id === selectedCatId;
@@ -171,7 +235,7 @@ export default function Hero() {
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCatId(cat.id)}
-                  className={`flex flex-col items-center gap-1.5 pb-2 px-3 transition-all cursor-pointer border-b-2 font-bold text-xs sm:text-sm whitespace-nowrap ${
+                  className={`flex flex-col items-center gap-1.5 pb-2 px-2 transition-all cursor-pointer border-b-2 font-bold text-xs whitespace-nowrap ${
                     isActive
                       ? "border-[#FF6B00] text-[#FF6B00]"
                       : "border-transparent text-gray-500 hover:text-[#0A0A0A]"
@@ -223,10 +287,10 @@ export default function Hero() {
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => navigate(`/register?role=client&category=${encodeURIComponent(activeCategory.label)}`)}
+                  onClick={() => navigate(`/categories/${activeCategory.id}`)}
                   className="bg-[#0A0A0A] hover:bg-[#FF6B00] text-white text-xs sm:text-sm font-bold py-3 px-6 rounded-full transition-all shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                  <span>Book {activeCategory.label}</span>
+                  <span>Explore {activeCategory.label} Subcategories</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

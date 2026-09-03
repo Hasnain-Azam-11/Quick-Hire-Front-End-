@@ -4,6 +4,7 @@ import { Sidebar } from '../components/Sidebar';
 import { CategoryChip } from '../components/CategoryChip';
 import { Button } from '../components/Button';
 import { Filter, Users } from 'lucide-react';
+import { CATEGORIES } from '../constants/categories';
 
 const jobs = [
   {
@@ -68,7 +69,7 @@ const jobs = [
   }
 ];
 
-const categories = ['All', 'Domestic Help', 'Childcare', 'Driving', 'Cooking', 'Construction', 'Event Staffing'];
+const categories = ['All', ...CATEGORIES];
 const cities = ['All Cities', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi', 'Faisalabad'];
 const durations = ['All', 'Days', 'Weeks', 'Months', 'Ongoing'];
 

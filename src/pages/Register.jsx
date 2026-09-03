@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Upload, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { CATEGORIES } from '../constants/categories';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -40,11 +41,7 @@ export default function Register() {
     }
   }, [isAuthenticated, userRole, navigate]);
 
-  const categories = [
-    'Domestic Help', 'Childcare', 'Elder Care', 'Event Staffing', 'Cooking',
-    'Driving', 'Construction', 'Security', 'Gardening', 'Tutoring',
-    'Beauty', 'Handyman', 'Moving', 'Office Support'
-  ];
+  const categories = CATEGORIES;
 
   const handleSubmit = (e) => {
     e.preventDefault();
