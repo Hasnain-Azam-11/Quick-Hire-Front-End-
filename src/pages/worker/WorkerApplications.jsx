@@ -2,6 +2,7 @@ import { useWorkerData } from '../../context/WorkerDataContext';
 import { StatusPill } from '../../components/StatusPill';
 import { CategoryChip } from '../../components/CategoryChip';
 import { Calendar, MapPin, DollarSign, Clock, FileText } from 'lucide-react';
+import { formatDate, formatPayRange } from '../../constants/hiring';
 
 export default function WorkerApplications() {
   const { applications } = useWorkerData();
@@ -62,7 +63,7 @@ export default function WorkerApplications() {
                   <DollarSign className="w-4 h-4 text-[#FF6B00]" />
                   <div>
                     <div className="text-gray-500">Pay Range</div>
-                    <div className="font-bold text-[#FF6B00]">PKR {app.payMin.toLocaleString()} - {app.payMax.toLocaleString()}</div>
+                    <div className="font-bold text-[#FF6B00]">{formatPayRange(app.payMin, app.payMax)} / {app.payUnit}</div>
                   </div>
                 </div>
 
@@ -78,7 +79,7 @@ export default function WorkerApplications() {
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <div>
                     <div className="text-gray-500">Start Date</div>
-                    <div className="font-semibold text-gray-800">{app.startDate}</div>
+                    <div className="font-semibold text-gray-800">{formatDate(app.startDate)}</div>
                   </div>
                 </div>
               </div>

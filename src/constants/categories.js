@@ -2,8 +2,7 @@ export const CATEGORY_CHOICES = [
   { value: 'driving', label: 'Driving' },
   { value: 'moving', label: 'Moving' },
   { value: 'handyman', label: 'Handyman' },
-  { value: 'childcare', label: 'Childcare' },
-  { value: 'elder_care', label: 'Elder Care' },
+  { value: 'caregiving', label: 'Caregiving' },
   { value: 'event_staffing', label: 'Event Staffing' },
   { value: 'cooking', label: 'Cooking' },
   { value: 'construction', label: 'Construction' },
@@ -11,17 +10,43 @@ export const CATEGORY_CHOICES = [
   { value: 'gardening', label: 'Gardening' },
   { value: 'tutoring', label: 'Tutoring' },
   { value: 'beauty', label: 'Beauty' },
-  { value: 'office_support', label: 'Office Support' }
+  { value: 'cleaning', label: 'Cleaning' }
 ];
 
 export const CATEGORIES = CATEGORY_CHOICES.map((c) => c.label);
+
+// Childcare and Elder Care used to be two categories; they are now one, "Caregiving".
+// Old links, saved data and searches for the old names still find it.
+export const LEGACY_CATEGORY_KEYS = {
+  childcare: 'caregiving',
+  'child care': 'caregiving',
+  'elder care': 'caregiving',
+  eldercare: 'caregiving',
+};
+
+// Extra words that should lead to a category when someone searches.
+export const CATEGORY_ALIASES = {
+  caregiving: ['child care', 'childcare', 'elder care', 'eldercare', 'adult care', 'elderly', 'nanny', 'babysit', 'caretaker', 'caregiver', 'care giver'],
+};
 
 export const SUBCATEGORIES_MAP = {
   driving: ["Personal Driver", "Airport Transfers", "Long Route Driving", "Event Chauffeur"],
   moving: ["House Shifting", "Office Relocation", "Loading & Unloading", "Packing Services"],
   handyman: ["Electrician", "Plumber", "Carpenter", "Painter", "AC Repair"],
-  childcare: ["Full-time Nanny", "Hourly Babysitting", "Newborn Care"],
-  elder_care: ["Companionship", "Medical Assistance", "Mobility Support"],
+  caregiving: [
+    "Full-time Nanny",
+    "Hourly Babysitting",
+    "Newborn Care",
+    "After-School Care",
+    "Night Care",
+    "Elderly Companionship",
+    "Elderly Home Attendant",
+    "Patient & Bedridden Care",
+    "Medical Assistance",
+    "Mobility Support",
+    "Special Needs Care",
+    "Post-Surgery Care"
+  ],
   event_staffing: ["Waiters", "Ushers", "Event Security", "Setup Crew"],
   cooking: ["Daily Home Cook", "Event Catering", "Baking"],
   construction: ["Mason", "Labor", "Tile Work", "Scaffolding"],
@@ -29,7 +54,17 @@ export const SUBCATEGORIES_MAP = {
   gardening: ["Lawn Mowing", "Landscaping", "Plant Care"],
   tutoring: ["School Subjects", "Quran Tutoring", "Language Classes"],
   beauty: ["Salon at Home", "Bridal Makeup", "Haircuts"],
-  office_support: ["Data Entry", "Receptionist", "Errand Running"]
+  cleaning: [
+    "House Cleaning",
+    "Office Cleaning",
+    "Window Cleaning",
+    "Sofa & Carpet Cleaning",
+    "Deep Cleaning",
+    "Kitchen & Bathroom Cleaning",
+    "Water Tank Cleaning",
+    "Post-Construction Cleaning",
+    "Laundry & Ironing"
+  ]
 };
 
 export const SUBCATEGORY_ICONS_MAP = {
@@ -50,6 +85,13 @@ export const SUBCATEGORY_ICONS_MAP = {
   "Hourly Babysitting": "🍼",
   "Newborn Care": "🤱",
   "Companionship": "🤝",
+  "Elderly Companionship": "🤝",
+  "After-School Care": "🎒",
+  "Night Care": "🌙",
+  "Elderly Home Attendant": "🏠",
+  "Patient & Bedridden Care": "🛏️",
+  "Special Needs Care": "💙",
+  "Post-Surgery Care": "🩹",
   "Medical Assistance": "🩺",
   "Mobility Support": "🦯",
   "Waiters": "🍽️",

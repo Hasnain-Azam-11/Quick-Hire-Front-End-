@@ -29,7 +29,7 @@ export default function GetHelpTaskMatrix() {
   const navigate = useNavigate();
 
   const handlePillClick = (task) => {
-    navigate(`/register?role=client&q=${encodeURIComponent(task)}`);
+    navigate(`/register?q=${encodeURIComponent(task)}`);
   };
 
   return (

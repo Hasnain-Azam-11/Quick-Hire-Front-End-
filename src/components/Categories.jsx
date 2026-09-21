@@ -3,15 +3,14 @@ import {
   Car,
   Package,
   Hammer,
-  Baby,
-  Users,
+  HeartHandshake,
   Sparkles,
   ChefHat,
   Construction,
   Shield,
   Flower2,
   GraduationCap,
-  Building2,
+  SprayCan,
   ArrowRight
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -20,8 +19,7 @@ export const CATEGORY_ICONS = {
   driving: Car,
   moving: Package,
   handyman: Hammer,
-  childcare: Baby,
-  elder_care: Users,
+  caregiving: HeartHandshake,
   event_staffing: Sparkles,
   cooking: ChefHat,
   construction: Construction,
@@ -29,15 +27,14 @@ export const CATEGORY_ICONS = {
   gardening: Flower2,
   tutoring: GraduationCap,
   beauty: Sparkles,
-  office_support: Building2,
+  cleaning: SprayCan,
 };
 
 export const categoriesList = [
   { slug: "driving", label: "Driving", icon: Car },
   { slug: "moving", label: "Moving", icon: Package },
   { slug: "handyman", label: "Handyman", icon: Hammer },
-  { slug: "childcare", label: "Childcare", icon: Baby },
-  { slug: "elder_care", label: "Elder Care", icon: Users },
+  { slug: "caregiving", label: "Caregiving", icon: HeartHandshake },
   { slug: "event_staffing", label: "Event Staffing", icon: Sparkles },
   { slug: "cooking", label: "Cooking", icon: ChefHat },
   { slug: "construction", label: "Construction", icon: Construction },
@@ -45,7 +42,7 @@ export const categoriesList = [
   { slug: "gardening", label: "Gardening", icon: Flower2 },
   { slug: "tutoring", label: "Tutoring", icon: GraduationCap },
   { slug: "beauty", label: "Beauty", icon: Sparkles },
-  { slug: "office_support", label: "Office Support", icon: Building2 },
+  { slug: "cleaning", label: "Cleaning", icon: SprayCan },
 ];
 
 export default function Categories() {
@@ -55,12 +52,12 @@ export default function Categories() {
   const handlePostCustomJob = () => {
     if (isAuthenticated) {
       if (role === 'client') {
-        navigate('/client/post-job');
+        navigate('/post-job');
       } else {
-        navigate('/client/post-job');
+        navigate('/post-job');
       }
     } else {
-      navigate('/register?role=client&redirect=/client/post-job');
+      navigate('/register?redirect=/post-job');
     }
   };
 
@@ -72,7 +69,7 @@ export default function Categories() {
             Browse by Category
           </h2>
           <p className="text-gray-500 text-sm sm:text-base">
-            Select a category to view specialized services and top-rated local workers.
+            Pick a category, tell us what you need, and hire from top-rated local workers.
           </p>
         </div>
 

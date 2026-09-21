@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
 import { UserCheck, Briefcase, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function DualCTA() {
+  const { workerEntryPath } = useAuth();
+
   return (
     <section className="py-20 bg-white border-t border-gray-100">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-12">
@@ -38,7 +41,7 @@ export default function DualCTA() {
             </div>
 
             <div className="pt-6 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-              <Link to="/register?role=client" className="w-full sm:w-auto">
+              <Link to="/register" className="w-full sm:w-auto">
                 <Button variant="primary" className="w-full text-sm py-3.5 px-8 font-bold gap-2">
                   <span>Sign Up as Client</span>
                   <ArrowRight className="w-4 h-4" />
@@ -78,7 +81,7 @@ export default function DualCTA() {
             </div>
 
             <div className="pt-6 relative z-10 flex flex-col sm:flex-row items-center gap-3">
-              <Link to="/register?role=worker" className="w-full sm:w-auto">
+              <Link to={workerEntryPath} className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   className="w-full border-white text-white hover:bg-white hover:text-[#FF6B00] text-sm py-3.5 px-8 font-bold gap-2"

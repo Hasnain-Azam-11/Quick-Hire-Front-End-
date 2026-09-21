@@ -1,28 +1,33 @@
 import { useState } from 'react';
 import { useWorkerData } from '../../context/WorkerDataContext';
 import { CategoryChip } from '../../components/CategoryChip';
+import JobsStatusNotice from '../../components/JobsStatusNotice';
 import { Button } from '../../components/Button';
 import { Filter, Users, Search, CheckCircle2 } from 'lucide-react';
-import { CATEGORIES } from '../../constants/categories';
+import { CATEGORIES, CITIES } from '../../constants/categories';
+import { JOB_DURATION_TYPES, dailyEquivalent, formatDate, formatPayRange, isOneOff } from '../../constants/hiring';
+
+// Pay is compared per day (an hour counts as 8 per day), so the slider has to reach hourly rates too.
+const MAX_PAY = 20000;
 
 const categories = ['All', ...CATEGORIES];
-const cities = ['All Cities', 'Karachi', 'Lahore', 'Islamabad', 'Rawalpindi'];
-const durations = ['All', '1 day', '2 days', '3 months', '6 months', 'Ongoing'];
+const cities = ['All Cities', ...CITIES];
+const durations = [{ value: 'All', label: 'All' }, ...JOB_DURATION_TYPES.map((d) => ({ value: d.value, label: d.value === 'permanent' ? 'Permanent' : isOneOff(d.value) ? `For a${d.value === 'event' ? 'n' : ''} ${d.value}` : `By the ${d.label.toLowerCase()}` }))];
 
 export default function WorkerBrowseJobs() {
-  const { jobs, applyForJob } = useWorkerData();
+  const { jobs, jobsStatus, refreshJobs, applyForJob } = useWorkerData();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedDuration, setSelectedDuration] = useState('All');
-  const [maxPay, setMaxPay] = useState(5000);
+  const [maxPay, setMaxPay] = useState(MAX_PAY);
 
   const filteredJobs = jobs.filter((job) => {
     const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
     const matchesCity = selectedCity === 'All Cities' || job.city === selectedCity;
-    const matchesDuration = selectedDuration === 'All' || job.duration === selectedDuration;
-    const matchesPay = job.payMax <= maxPay || job.payMin <= maxPay;
+    const matchesDuration = selectedDuration === 'All' || job.durationType === selectedDuration;
+    const matchesPay = dailyEquivalent(job.payMin, job.payUnit) <= maxPay;
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,20 +100,20 @@ export default function WorkerBrowseJobs() {
             <div>
               <div className="flex justify-between text-xs font-semibold text-gray-700 mb-2">
                 <span>Max Pay Rate</span>
-                <span className="text-[#FF6B00]">Up to PKR {maxPay.toLocaleString()}/day</span>
+                <span className="text-[#FF6B00]">{maxPay >= MAX_PAY ? 'Any' : `Up to PKR ${maxPay.toLocaleString()}/day`}</span>
               </div>
               <input
                 type="range"
                 min="1000"
-                max="5000"
-                step="250"
+                max={MAX_PAY}
+                step="500"
                 value={maxPay}
                 onChange={(e) => setMaxPay(parseInt(e.target.value))}
                 className="w-full accent-[#FF6B00]"
               />
               <div className="flex justify-between text-[11px] text-gray-500 mt-1">
                 <span>PKR 1,000</span>
-                <span>PKR 5,000</span>
+                <span>PKR {MAX_PAY.toLocaleString()}</span>
               </div>
             </div>
 
@@ -121,7 +126,7 @@ export default function WorkerBrowseJobs() {
                 className="w-full px-3 py-2 bg-[#F5F5F5] border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#FF6B00]"
               >
                 {durations.map((dur) => (
-                  <option key={dur} value={dur}>{dur}</option>
+                  <option key={dur.value} value={dur.value}>{dur.label}</option>
                 ))}
               </select>
             </div>
@@ -136,7 +141,7 @@ export default function WorkerBrowseJobs() {
                 setSelectedCategory('All');
                 setSelectedCity('All Cities');
                 setSelectedDuration('All');
-                setMaxPay(5000);
+                setMaxPay(MAX_PAY);
               }}
             >
               Reset All Filters
@@ -146,6 +151,8 @@ export default function WorkerBrowseJobs() {
 
         {/* Jobs List */}
         <div className="flex-1 space-y-4">
+          <JobsStatusNotice status={jobsStatus} onRetry={refreshJobs} />
+
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-600">
               Showing <strong className="text-[#0A0A0A]">{filteredJobs.length}</strong> open jobs
@@ -188,7 +195,7 @@ export default function WorkerBrowseJobs() {
                     <div>
                       <div className="text-gray-500 mb-0.5">Pay Rate</div>
                       <div className="font-bold text-[#FF6B00] text-sm">
-                        PKR {job.payMin.toLocaleString()} - {job.payMax.toLocaleString()}/day
+                        {formatPayRange(job.payMin, job.payMax)}/{job.payUnit}
                       </div>
                     </div>
                     <div>
@@ -197,7 +204,7 @@ export default function WorkerBrowseJobs() {
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">Start Date</div>
-                      <div className="font-semibold text-gray-800 text-sm">{job.startDate}</div>
+                      <div className="font-semibold text-gray-800 text-sm">{formatDate(job.startDate)}</div>
                     </div>
                     <div>
                       <div className="text-gray-500 mb-0.5">Applicants</div>

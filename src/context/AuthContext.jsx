@@ -1,126 +1,196 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { clearToken, getToken, setToken } from '../api/token';
+import { registerClient, requestToken } from '../api/auth';
 
 const AuthContext = createContext(null);
+
+const USER_KEY = 'quickhire_user';
+const USERS_KEY = 'quickhire_users';
+const LEGACY_ROLE_KEY = 'quickhire_role';
+
+const newId = () => `u-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+// Accepts the old single-`role` shape and returns `{ roles, activeRole }`.
+function normalizeUser(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const legacyRole = raw.role;
+  let roles = Array.isArray(raw.roles) ? [...raw.roles] : legacyRole === 'worker' ? ['client', 'worker'] : ['client'];
+  if (!roles.includes('client')) roles = ['client', ...roles];
+
+  const activeRole = roles.includes(raw.activeRole)
+    ? raw.activeRole
+    : roles.includes(legacyRole)
+    ? legacyRole
+    : 'client';
+
+  const next = { ...raw, roles, activeRole };
+  delete next.role;
+  if (!next.id) next.id = newId();
+  return next;
+}
+
+function readUsers() {
+  try {
+    const list = JSON.parse(localStorage.getItem(USERS_KEY));
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeUsers(list) {
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.error('Error saving users to localStorage:', e);
+  }
+}
+
+// The backend only stores the credentials and client profile, so the rest of the account
+// (full name, roles, ...) is kept per username in this browser's registry.
+const findProfile = (username) => readUsers().find((u) => u.username === username) || null;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('quickhire_user');
-      return savedUser ? JSON.parse(savedUser) : null;
+      // No token means not signed in (this also drops sessions from the old mock login).
+      if (!getToken()) return null;
+      return normalizeUser(JSON.parse(localStorage.getItem(USER_KEY)));
     } catch (e) {
       console.error('Error loading user from localStorage:', e);
       return null;
     }
   });
 
-  const [role, setRole] = useState(() => {
-    try {
-      const savedRole = localStorage.getItem('quickhire_role');
-      if (savedRole) return savedRole;
-      const savedUser = localStorage.getItem('quickhire_user');
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser);
-        return parsed?.role || null;
-      }
-    } catch (e) {
-      console.error('Error loading role from localStorage:', e);
-    }
-    return null;
-  });
-
+  // Keep the session and the local account registry in sync.
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('quickhire_user', JSON.stringify(user));
-      localStorage.setItem('quickhire_role', user.role || role || 'worker');
-    } else {
-      localStorage.removeItem('quickhire_user');
-      localStorage.removeItem('quickhire_role');
+    try {
+      localStorage.removeItem(LEGACY_ROLE_KEY);
+      if (!user) {
+        localStorage.removeItem(USER_KEY);
+        return;
+      }
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      const others = readUsers().filter((u) => u.id !== user.id);
+      writeUsers([...others, user]);
+    } catch (e) {
+      console.error('Error saving user to localStorage:', e);
     }
-  }, [user, role]);
+  }, [user]);
 
-  const login = (email, password, userRole = 'worker') => {
-    const defaultUser = userRole === 'worker' 
-      ? {
-          name: 'Fatima Ahmed',
-          email: email || 'fatima@quickhire.pk',
-          phone: '+92 300 1234567',
-          city: 'Karachi',
-          category: 'Childcare',
-          experience: 3,
-          role: 'worker',
-          rating: 4.9,
-          completedJobs: 24,
-          earningsThisWeek: 18500,
-          isOnDuty: true
-        }
-      : {
-          name: 'Ali Raza',
-          email: email || 'ali@quickhire.pk',
-          phone: '+92 302 9876543',
-          city: 'Lahore',
-          role: 'client'
-        };
-
-    setUser(defaultUser);
-    setRole(userRole);
-    return defaultUser;
+  const startSession = (token, profile) => {
+    setToken(token);
+    setUser(profile);
   };
 
-  const register = (formData, userRole = 'client') => {
-    const newUser = {
-      name: formData.name || (userRole === 'worker' ? 'New Worker' : 'New Client'),
-      email: formData.email || 'user@quickhire.pk',
-      phone: formData.phone || '+92 300 0000000',
-      city: formData.city || 'Karachi',
-      category: formData.category || 'General',
-      experience: formData.experience || 1,
-      role: userRole,
-      rating: 5.0,
-      completedJobs: 0,
-      earningsThisWeek: 0,
-      isOnDuty: true
-    };
+  // Signs in against the backend (POST /api-token-auth/). Rejects with the axios error.
+  const login = async (username, password) => {
+    const token = await requestToken({ username, password });
+    const profile = normalizeUser(
+      findProfile(username) || {
+        id: username,
+        username,
+        name: username,
+        email: '',
+        phone: '',
+        city: '',
+        accountType: 'individual',
+        roles: ['client'],
+        activeRole: 'client',
+      }
+    );
+    startSession(token, profile);
+    return profile;
+  };
 
-    setUser(newUser);
-    setRole(userRole);
-    return newUser;
+  // Creates a client account (POST /Client/registration/), then signs the user in because the
+  // registration response carries no token. Workers add the worker role later via /become-worker.
+  // Resolves `{ user, signedIn }`; rejects with the axios error if registration itself fails.
+  const register = async (form) => {
+    const username = form.username.trim();
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+
+    // The response is the new ClientProfile: { id, phone_number, profile_picture, average_rating }.
+    const created = await registerClient({
+      username,
+      email,
+      password: form.password,
+      phone_number: phone.replace(/[\s-]/g, ''),
+    });
+
+    const profile = normalizeUser({
+      id: username,
+      username,
+      name: form.name.trim(),
+      email,
+      phone,
+      city: '',
+      accountType: 'individual',
+      clientProfileId: created?.id ?? null,
+      profilePicture: created?.profile_picture ?? null,
+      averageRating: Number(created?.average_rating) || 0,
+      joinedAt: new Date().toISOString(),
+      roles: ['client'],
+      activeRole: 'client',
+    });
+
+    try {
+      startSession(await requestToken({ username, password: form.password }), profile);
+      return { user: profile, signedIn: true };
+    } catch {
+      // Account exists; remember the profile so the next manual sign-in restores the name.
+      writeUsers([...readUsers().filter((u) => u.id !== profile.id), profile]);
+      return { user: profile, signedIn: false };
+    }
   };
 
   const logout = () => {
+    clearToken();
     setUser(null);
-    setRole(null);
-    localStorage.removeItem('quickhire_user');
-    localStorage.removeItem('quickhire_role');
   };
 
   const updateProfile = (updatedFields) => {
-    setUser((prev) => {
-      const updated = { ...prev, ...updatedFields };
-      localStorage.setItem('quickhire_user', JSON.stringify(updated));
-      return updated;
-    });
+    setUser((prev) => (prev ? { ...prev, ...updatedFields } : prev));
   };
 
-  const toggleDuty = () => {
+  const addRole = useCallback((newRole) => {
     setUser((prev) => {
-      if (!prev) return prev;
-      const updated = { ...prev, isOnDuty: !prev.isOnDuty };
-      localStorage.setItem('quickhire_user', JSON.stringify(updated));
-      return updated;
+      if (!prev || prev.roles.includes(newRole)) return prev;
+      return { ...prev, roles: [...prev.roles, newRole], activeRole: newRole };
     });
-  };
+  }, []);
+
+  const switchRole = useCallback((newRole) => {
+    setUser((prev) => {
+      if (!prev || !prev.roles.includes(newRole) || prev.activeRole === newRole) return prev;
+      return { ...prev, activeRole: newRole };
+    });
+  }, []);
+
+  const roles = user?.roles ?? [];
+  const workerEntryPath = !user
+    ? '/register?redirect=/become-worker'
+    : roles.includes('worker')
+    ? '/worker/dashboard'
+    : '/become-worker';
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        role: user?.role || role,
+        role: user?.activeRole ?? null,
+        roles,
         isAuthenticated: !!user,
+        hasRole: (r) => roles.includes(r),
+        workerEntryPath,
         login,
         register,
         logout,
         updateProfile,
-        toggleDuty
+        addRole,
+        switchRole,
       }}
     >
       {children}

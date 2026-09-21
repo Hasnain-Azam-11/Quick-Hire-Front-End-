@@ -7,9 +7,9 @@ const { Title, Text } = Typography;
 // Once the Django API is ready, replace this with a fetch to
 // something like GET /api/workers/top/ and map over the response instead.
 const topWorkers = [
-  { initials: "FA", name: "Fatima Ahmed", category: "Elder Care", rating: 4.9, jobs: 127 },
+  { initials: "FA", name: "Fatima Ahmed", category: "Caregiving", rating: 4.9, jobs: 127 },
   { initials: "AH", name: "Ali Hassan", category: "Driving", rating: 4.8, jobs: 93 },
-  { initials: "AK", name: "Ayesha Khan", category: "Childcare", rating: 5.0, jobs: 156 },
+  { initials: "AK", name: "Ayesha Khan", category: "Caregiving", rating: 5.0, jobs: 156 },
   { initials: "MR", name: "Muhammad Raza", category: "Construction", rating: 4.7, jobs: 84 },
 ];
 

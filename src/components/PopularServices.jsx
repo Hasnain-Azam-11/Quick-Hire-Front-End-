@@ -23,7 +23,7 @@ const projects = [
     title: "Babysitting & Childcare",
     startingRate: "1,200",
     image: cleaningImg,
-    category: "Childcare"
+    category: "Caregiving"
   },
   {
     id: 4,
@@ -84,7 +84,7 @@ export default function PopularServices() {
           {projects.map((proj) => (
             <div
               key={proj.id}
-              onClick={() => navigate(`/register?role=client&category=${encodeURIComponent(proj.category)}`)}
+              onClick={() => navigate(`/register?category=${encodeURIComponent(proj.category)}`)}
               className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-[#FF6B00] hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between"
             >
               {/* Card Photo */}

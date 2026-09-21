@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useClientData } from '../../context/ClientDataContext';
-import { StarRating } from '../../components/StarRating';
-import { Button } from '../../components/Button';
-import { Avatar } from '../../components/Avatar';
-import { Plus, X, CheckCircle2, Star } from 'lucide-react';
+import { useClientData } from '../context/ClientDataContext';
+import { StarRating } from './StarRating';
+import { Button } from './Button';
+import { Avatar } from './Avatar';
+import { Plus, X, CheckCircle2 } from 'lucide-react';
 
-export default function ClientReviews() {
+export default function ClientReviewsPanel() {
   const { clientReviews, addReview } = useClientData();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,11 +24,11 @@ export default function ClientReviews() {
   };
 
   return (
-    <div className="p-8 space-y-8 relative">
+    <div className="space-y-5 relative">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#0A0A0A]">My Reviews</h1>
-          <p className="text-gray-600 mt-1">Feedback and ratings you have submitted for workers</p>
+          <h2 className="text-xl font-bold text-[#0A0A0A]">Reviews you've written</h2>
+          <p className="text-gray-600 text-sm mt-1">Feedback and ratings you have given to workers</p>
         </div>
 
         <Button
@@ -42,6 +42,11 @@ export default function ClientReviews() {
       </div>
 
       <div className="space-y-4">
+        {clientReviews.length === 0 && (
+          <p className="text-sm text-gray-500 bg-white rounded-2xl border border-gray-100 p-6">
+            You haven&apos;t reviewed anyone yet. Reviews you write help other clients choose.
+          </p>
+        )}
         {clientReviews.map((rev) => (
           <div
             key={rev.id}

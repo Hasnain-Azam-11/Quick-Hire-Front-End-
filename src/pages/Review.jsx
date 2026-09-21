@@ -56,7 +56,7 @@ export default function Review() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/client/bookings');
+    navigate('/my-requests');
   };
 
   const sentiment = getSentiment();

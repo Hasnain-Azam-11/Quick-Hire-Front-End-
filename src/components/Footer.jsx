@@ -1,14 +1,15 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { Globe, Share2, MessageCircle, Mail, Shield } from "lucide-react";
 
 const footerColumns = [
   {
     heading: "Discover",
     links: [
-      { label: "Become a Worker", to: "/register?role=worker" },
+      { label: "Become a Worker", to: "/become-worker" },
       { label: "Services By City", to: "/#services" },
       { label: "Elite Workers", to: "/#services" },
-      { label: "Help Nearby", to: "/register?role=client" },
+      { label: "Help Nearby", to: "/register" },
     ],
   },
   {
@@ -25,7 +26,7 @@ const footerColumns = [
     links: [
       { label: "How It Works", to: "/#how-it-works" },
       { label: "Happiness Guarantee", to: "/#services" },
-      { label: "Safety & Verification", to: "/register?role=client" },
+      { label: "Safety & Verification", to: "/register" },
     ],
   },
   {
@@ -39,6 +40,8 @@ const footerColumns = [
 ];
 
 export default function Footer() {
+  const { workerEntryPath } = useAuth();
+
   return (
     <footer className="bg-[#14202E] text-white pt-16 pb-8 border-t border-white/10">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-12 space-y-12">
@@ -65,7 +68,7 @@ export default function Footer() {
                 <ul className="space-y-2 text-xs">
                   {col.links.map((link) => (
                     <li key={link.label}>
-                      <Link to={link.to} className="text-gray-400 hover:text-[#FF6B00] transition-colors">
+                      <Link to={link.label === "Become a Worker" ? workerEntryPath : link.to} className="text-gray-400 hover:text-[#FF6B00] transition-colors">
                         {link.label}
                       </Link>
                     </li>

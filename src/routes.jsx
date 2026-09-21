@@ -1,5 +1,4 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
 
 // ===== PUBLIC PAGES =====
 import Landing from './pages/Landing';
@@ -7,46 +6,34 @@ import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import WorkerProfile from './pages/WorkerProfile';
 import CategoryPage from './pages/CategoryPage';
+import WorkersPage from './pages/WorkersPage';
+import BecomeWorker from './pages/BecomeWorker';
+import PublicLayout from './layouts/PublicLayout';
 
-// ===== CLIENT PAGES =====
-import ClientLayout from './layouts/ClientLayout';
-import ClientHome from './pages/client/ClientHome';
-import ClientPostJob from './pages/client/ClientPostJob';
-import ClientBrowseWorkers from './pages/client/ClientBrowseWorkers';
-import ClientMyJobs from './pages/client/ClientMyJobs';
-import ClientReviews from './pages/client/ClientReviews';
-import ClientSettings from './pages/client/ClientSettings';
+// ===== SIGNED-IN PAGES (all accounts are clients first) =====
+import Profile from './pages/Profile';
+import MyRequests from './pages/MyRequests';
+import PostCustomJob from './pages/PostCustomJob';
 
 // ===== WORKER PAGES =====
 import WorkerLayout from './layouts/WorkerLayout';
 import WorkerHome from './pages/worker/WorkerHome';
 import WorkerBrowseJobs from './pages/worker/WorkerBrowseJobs';
 import WorkerApplications from './pages/worker/WorkerApplications';
+import WorkerOffers from './pages/worker/WorkerOffers';
+import WorkerServices from './pages/worker/WorkerServices';
 import WorkerSchedule from './pages/worker/WorkerSchedule';
 import WorkerReviews from './pages/worker/WorkerReviews';
 import WorkerSettings from './pages/worker/WorkerSettings';
 
 // ===== OTHER PAGES =====
-import AIRecommendations from './pages/AIRecommendations';
 import BookingDetail from './pages/BookingDetail';
 import Review from './pages/Review';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-
-// ===== DASHBOARD REDIRECT =====
-function DashboardRedirect() {
-  const { isAuthenticated, role } = useAuth();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  if (role === 'client') {
-    return <Navigate to="/client/dashboard" replace />;
-  }
-
-  return <Navigate to="/worker/dashboard" replace />;
-}
+import DashboardRedirect from './components/DashboardRedirect';
+import RedirectKeepSearch from './components/RedirectKeepSearch';
+import LegacyClientRedirect from './components/LegacyClientRedirect';
 
 // ===== ROUTER =====
 export const router = createBrowserRouter([
@@ -70,75 +57,48 @@ export const router = createBrowserRouter([
     element: <DashboardRedirect />,
   },
   {
-    path: '/worker-profile/:id',
-    element: <WorkerProfile />,
-  },
-  {
     path: '/categories/:categorySlug',
     element: <CategoryPage />,
   },
+  {
+    // Browsing workers and viewing a profile is open to guests; hiring asks them to sign in.
+    element: <PublicLayout />,
+    children: [
+      { path: '/workers', element: <WorkersPage /> },
+      { path: '/worker-profile/:id', element: <WorkerProfile /> },
+    ],
+  },
+  {
+    path: '/browse-workers',
+    element: <RedirectKeepSearch to="/workers" />,
+  },
+  {
+    // Any signed-in client can add the worker role; guests are sent to register first.
+    element: <ProtectedRoute guestRedirect="/register?redirect=/become-worker" />,
+    children: [{ path: '/become-worker', element: <BecomeWorker /> }],
+  },
 
   // ============================
-  // 2. CLIENT ROUTES (Protected)
+  // 2. SIGNED-IN PAGES (no client dashboard: they use the normal site layout)
   // ============================
   {
-    element: <ProtectedRoute allowedRole="client" />,
+    element: <ProtectedRoute />,
     children: [
       {
-        path: '/client',
-        element: <ClientLayout />,
+        element: <PublicLayout />,
         children: [
-          {
-            index: true,
-            element: <Navigate to="/client/dashboard" replace />,
-          },
-          {
-            path: 'dashboard',
-            element: <ClientHome />,
-          },
-          {
-            path: 'post-job',
-            element: <ClientPostJob />,
-          },
-          {
-            path: 'workers',
-            element: <ClientBrowseWorkers />,
-          },
-          {
-            path: 'jobs',
-            element: <ClientMyJobs />,
-          },
-          {
-            path: 'reviews',
-            element: <ClientReviews />,
-          },
-          {
-            path: 'settings',
-            element: <ClientSettings />,
-          },
-          {
-            path: '*',
-            element: <Navigate to="/client/dashboard" replace />,
-          },
+          { path: '/profile', element: <Profile /> },
+          { path: '/my-requests', element: <MyRequests /> },
+          { path: '/post-job', element: <PostCustomJob /> },
+          { path: '/bookings/:id', element: <BookingDetail /> },
         ],
       },
-      {
-        path: '/client/ai-recommendations',
-        element: <AIRecommendations />,
-      },
-      {
-        path: '/client/bookings/:id',
-        element: <BookingDetail />,
-      },
-      {
-        path: '/post-job',
-        element: <Navigate to="/client/post-job" replace />,
-      },
-      {
-        path: '/browse-workers',
-        element: <Navigate to="/client/workers" replace />,
-      },
     ],
+  },
+  {
+    // The old client dashboard was removed; keep its URLs working.
+    path: '/client/*',
+    element: <LegacyClientRedirect />,
   },
 
   // ============================
@@ -162,6 +122,14 @@ export const router = createBrowserRouter([
           {
             path: 'jobs',
             element: <WorkerBrowseJobs />,
+          },
+          {
+            path: 'offers',
+            element: <WorkerOffers />,
+          },
+          {
+            path: 'services',
+            element: <WorkerServices />,
           },
           {
             path: 'applications',
