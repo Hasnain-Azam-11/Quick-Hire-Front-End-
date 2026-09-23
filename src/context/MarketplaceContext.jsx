@@ -9,6 +9,7 @@ import {
   categoryLabel,
   formatDate,
   formatDuration,
+  formatPKR,
   payUnitFor,
   timeAgo,
 } from '../constants/hiring';
@@ -77,7 +78,18 @@ function buildSeed() {
     review('r-402', { workerId: 'seed-w3', workerName: 'Ali Hassan', clientId: 'demo-client', clientName: 'Ali Raza', jobTitle: 'Corporate Dinner Event Assistance', rating: 5, date: '2026-04-10', comment: 'Great attitude, handled guest arrivals smoothly without any supervision needed.' }),
   ];
 
-  return { workers, applications: [], offers: [], bookings: [], reviews, jobState: {}, services: [] };
+  return {
+    workers,
+    applications: [],
+    offers: [],
+    bookings: [],
+    reviews,
+    jobState: {},
+    services: [],
+    notifications: [],
+    conversations: [],
+    messages: [],
+  };
 }
 
 function loadDb() {
@@ -88,6 +100,9 @@ function loadDb() {
       return {
         jobState: {},
         services: [],
+        notifications: [],
+        conversations: [],
+        messages: [],
         ...saved,
         workers: saved.workers.map((w) => ({ ...w, category: fromBackendCategory(w.category) })),
       };
@@ -111,6 +126,7 @@ const blankProfile = (userId) => ({
   rates: {},
   isOnDuty: true,
   verified: false,
+  verificationNote: '',
   rating: 5,
   reviewsCount: 0,
   completedJobs: 0,
@@ -125,6 +141,10 @@ function bookingFrom(fields) {
     offerId: null,
     status: 'confirmed',
     createdAt: new Date().toISOString(),
+    paymentStatus: 'unpaid', // 'unpaid' | 'paid'
+    paymentMethod: null,
+    transactionId: null,
+    paidAt: null,
     ...fields,
   };
 }
@@ -201,6 +221,33 @@ export function MarketplaceProvider({ children }) {
 
   const setWorkerDuty = (userId, isOnDuty) => upsertWorkerProfile(userId, { isOnDuty });
 
+  // Drops a notification in front of `userId`. Used internally by the actions below whenever
+  // something happens that the other side should hear about.
+  const pushNotification = (userId, notif) => {
+    if (!userId) return;
+    setDb((prev) => ({
+      ...prev,
+      notifications: [
+        { id: uid('notif'), userId, isRead: false, createdAt: new Date().toISOString(), ...notif },
+        ...prev.notifications,
+      ],
+    }));
+  };
+
+  // Admin action: approve or send back a worker's verification. `note` is only shown to the worker
+  // when sending back for changes.
+  const setWorkerVerification = (workerId, verified, note = '') => {
+    upsertWorkerProfile(workerId, { verified, verificationNote: verified ? '' : note });
+    pushNotification(workerId, {
+      type: 'verification',
+      title: verified ? 'Your profile is verified' : 'Verification needs changes',
+      body: verified
+        ? 'Clients can now see your Verified badge on your profile.'
+        : note || 'Please review your CNIC and profile details, then submit again.',
+      link: '/worker/settings',
+    });
+  };
+
   // POST /Client/jobs/. Rejects with the axios error so the form can show the server's messages.
   const createJob = async (data) => {
     const created = await postJob(data);
@@ -265,6 +312,32 @@ export function MarketplaceProvider({ children }) {
         total: calcTotal(chosen.proposedRate, target.durationType, target.durationCount),
       });
 
+      const notifs = prev.applications
+        .filter((a) => a.jobId === jobId)
+        .map((a) =>
+          a.id === applicationId
+            ? {
+                id: uid('notif'),
+                userId: a.workerId,
+                type: 'application',
+                title: `Your application for "${target.title}" was accepted!`,
+                body: `${target.clientName} assigned you this job. Check your schedule for details.`,
+                link: '/worker/applications',
+                isRead: false,
+                createdAt: new Date().toISOString(),
+              }
+            : {
+                id: uid('notif'),
+                userId: a.workerId,
+                type: 'application',
+                title: `Your application for "${target.title}" was not selected`,
+                body: 'The client chose another worker for this job. Keep applying — new jobs are posted daily.',
+                link: '/worker/applications',
+                isRead: false,
+                createdAt: new Date().toISOString(),
+              }
+        );
+
       return {
         ...prev,
         jobState: {
@@ -281,6 +354,7 @@ export function MarketplaceProvider({ children }) {
           return { ...a, status: a.id === applicationId ? 'accepted' : 'declined' };
         }),
         bookings: [created, ...prev.bookings],
+        notifications: [...notifs, ...prev.notifications],
       };
     });
   };
@@ -312,6 +386,12 @@ export function MarketplaceProvider({ children }) {
       createdAt: new Date().toISOString(),
     };
     setDb((prev) => ({ ...prev, offers: [offer, ...prev.offers] }));
+    pushNotification(workerId, {
+      type: 'offer',
+      title: `New hire request from ${user.name}`,
+      body: `${target.category} • ${formatPKR(rate)} / ${payUnitFor(durationType)}`,
+      link: '/worker/offers',
+    });
     return offer;
   };
 
@@ -321,7 +401,23 @@ export function MarketplaceProvider({ children }) {
       if (!offer || offer.status !== 'pending') return prev;
 
       if (decision !== 'accepted') {
-        return { ...prev, offers: prev.offers.map((o) => (o.id === offerId ? { ...o, status: 'declined' } : o)) };
+        return {
+          ...prev,
+          offers: prev.offers.map((o) => (o.id === offerId ? { ...o, status: 'declined' } : o)),
+          notifications: [
+            {
+              id: uid('notif'),
+              userId: offer.clientId,
+              type: 'offer',
+              title: `${offer.workerName} declined your hire request`,
+              body: `They aren't available for this ${offer.category.toLowerCase()} request. Try another worker.`,
+              link: '/my-requests?tab=offers',
+              isRead: false,
+              createdAt: new Date().toISOString(),
+            },
+            ...prev.notifications,
+          ],
+        };
       }
 
       const created = bookingFrom({
@@ -348,6 +444,19 @@ export function MarketplaceProvider({ children }) {
         ...prev,
         offers: prev.offers.map((o) => (o.id === offerId ? { ...o, status: 'accepted', bookingId: created.id } : o)),
         bookings: [created, ...prev.bookings],
+        notifications: [
+          {
+            id: uid('notif'),
+            userId: offer.clientId,
+            type: 'offer',
+            title: `${offer.workerName} accepted your hire request`,
+            body: `Booked for ${formatDuration(offer.durationType, offer.durationCount)}, starting ${formatDate(offer.startDate)}.`,
+            link: `/bookings/${created.id}`,
+            isRead: false,
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.notifications,
+        ],
       };
     });
   };
@@ -386,9 +495,139 @@ export function MarketplaceProvider({ children }) {
               return { ...w, reviewsCount: count, rating: avg };
             })
           : prev.workers,
+        notifications: reviewed
+          ? [
+              {
+                id: uid('notif'),
+                userId: reviewed.id,
+                type: 'review',
+                title: `New ${rating}-star review from ${user.name}`,
+                body: data.comment ? `"${data.comment.slice(0, 100)}${data.comment.length > 100 ? '…' : ''}"` : '',
+                link: `/worker-profile/${reviewed.id}`,
+                isRead: false,
+                createdAt: new Date().toISOString(),
+              },
+              ...prev.notifications,
+            ]
+          : prev.notifications,
       };
     });
   };
+
+  // ===== Messaging (mock: no backend yet — see the Messages page for the shape a real one needs) =====
+
+  // Finds or creates the one conversation between the current user and `otherUserId`, and returns its
+  // id right away so the caller can navigate to it.
+  const startConversation = (otherUserId, otherUserName) => {
+    if (!user || !otherUserId || otherUserId === meId) return null;
+    const existing = db.conversations.find(
+      (c) => c.participantIds.includes(meId) && c.participantIds.includes(otherUserId)
+    );
+    if (existing) return existing.id;
+
+    const conversation = {
+      id: uid('conv'),
+      participantIds: [meId, otherUserId],
+      participantNames: { [meId]: user.name, [otherUserId]: otherUserName || 'User' },
+      lastMessageAt: new Date().toISOString(),
+      lastMessageText: '',
+    };
+    setDb((prev) => ({ ...prev, conversations: [conversation, ...prev.conversations] }));
+    return conversation.id;
+  };
+
+  const sendMessage = (conversationId, text) => {
+    const trimmed = text.trim();
+    if (!user || !trimmed) return;
+
+    setDb((prev) => {
+      const conversation = prev.conversations.find((c) => c.id === conversationId);
+      if (!conversation) return prev;
+
+      const message = {
+        id: uid('msg'),
+        conversationId,
+        senderId: meId,
+        senderName: user.name,
+        text: trimmed,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      };
+      const otherId = conversation.participantIds.find((id) => id !== meId);
+
+      return {
+        ...prev,
+        messages: [...prev.messages, message],
+        conversations: prev.conversations.map((c) =>
+          c.id === conversationId ? { ...c, lastMessageAt: message.createdAt, lastMessageText: trimmed } : c
+        ),
+        notifications: otherId
+          ? [
+              {
+                id: uid('notif'),
+                userId: otherId,
+                type: 'message',
+                title: `New message from ${user.name}`,
+                body: trimmed.slice(0, 100),
+                link: `/messages/${conversationId}`,
+                isRead: false,
+                createdAt: new Date().toISOString(),
+              },
+              ...prev.notifications,
+            ]
+          : prev.notifications,
+      };
+    });
+  };
+
+  const markConversationRead = (conversationId) => {
+    setDb((prev) => ({
+      ...prev,
+      messages: prev.messages.map((m) =>
+        m.conversationId === conversationId && m.senderId !== meId ? { ...m, isRead: true } : m
+      ),
+    }));
+  };
+
+  // ===== Payments (mock: shows the method the client picked; no real gateway call yet) =====
+  const payForBooking = (bookingId, method) => {
+    setDb((prev) => {
+      const booking = prev.bookings.find((b) => b.id === bookingId);
+      if (!booking || booking.paymentStatus === 'paid') return prev;
+
+      const transactionId = `TXN-${Date.now().toString(36).toUpperCase()}`;
+      const paidAt = new Date().toISOString();
+
+      return {
+        ...prev,
+        bookings: prev.bookings.map((b) =>
+          b.id === bookingId ? { ...b, paymentStatus: 'paid', paymentMethod: method, transactionId, paidAt } : b
+        ),
+        notifications: [
+          {
+            id: uid('notif'),
+            userId: booking.workerId,
+            type: 'payment',
+            title: 'Payment received',
+            body: `${booking.clientName} paid ${formatPKR(booking.total)} via ${method} for "${booking.title}".`,
+            link: `/bookings/${bookingId}`,
+            isRead: false,
+            createdAt: paidAt,
+          },
+          ...prev.notifications,
+        ],
+      };
+    });
+  };
+
+  const markNotificationRead = (id) =>
+    setDb((prev) => ({ ...prev, notifications: prev.notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n)) }));
+
+  const markAllNotificationsRead = () =>
+    setDb((prev) => ({
+      ...prev,
+      notifications: prev.notifications.map((n) => (n.userId === meId ? { ...n, isRead: true } : n)),
+    }));
 
   // ===== Derived views =====
   const views = useMemo(() => {
@@ -437,11 +676,15 @@ export function MarketplaceProvider({ children }) {
     const myApplicationsRaw = db.applications.filter((a) => a.workerId === meId);
     const appliedJobIds = new Set(myApplicationsRaw.map((a) => a.jobId));
 
-    const scheduleView = (b) => ({
+    const bookingView = (b) => ({
       id: b.id,
       bookingId: b.id,
       jobTitle: b.title,
+      category: b.category,
       clientName: b.clientName,
+      clientId: b.clientId,
+      workerName: b.workerName,
+      workerId: b.workerId,
       startDate: b.startDate,
       durationType: b.durationType,
       durationCount: b.durationCount,
@@ -453,10 +696,36 @@ export function MarketplaceProvider({ children }) {
       rate: b.rate,
       payUnit: b.payUnit,
       total: b.total,
+      paymentStatus: b.paymentStatus || 'unpaid',
+      paymentMethod: b.paymentMethod || null,
+      transactionId: b.transactionId || null,
+      paidAt: b.paidAt ? formatDate(b.paidAt) : null,
     });
+    // Kept for existing callers; identical to bookingView.
+    const scheduleView = bookingView;
 
     const reviewView = (r) => ({ ...r, date: formatDate(r.date) });
     const receivedOffers = db.offers.filter((o) => o.workerId === meId);
+
+    const notificationView = (n) => ({ ...n, timeAgo: timeAgo(n.createdAt) });
+    const myNotificationsRaw = db.notifications.filter((n) => n.userId === meId);
+
+    const myConversationsRaw = db.conversations
+      .filter((c) => c.participantIds.includes(meId))
+      .map((c) => {
+        const otherId = c.participantIds.find((id) => id !== meId);
+        const unread = db.messages.filter((m) => m.conversationId === c.id && m.senderId !== meId && !m.isRead).length;
+        return {
+          id: c.id,
+          otherUserId: otherId,
+          otherUserName: c.participantNames?.[otherId] || 'User',
+          lastMessageAt: c.lastMessageAt,
+          lastMessageTimeAgo: c.lastMessageAt ? timeAgo(c.lastMessageAt) : '',
+          lastMessageText: c.lastMessageText,
+          unread,
+        };
+      })
+      .sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
 
     return {
       myWorkerProfile,
@@ -485,6 +754,7 @@ export function MarketplaceProvider({ children }) {
         };
       }),
       mySchedule: db.bookings.filter((b) => b.workerId === meId).map(scheduleView),
+      myBookingsAsClient: db.bookings.filter((b) => b.clientId === meId).map(bookingView),
       receivedOffers,
       pendingOfferCount: receivedOffers.filter((o) => o.status === 'pending').length,
       sentOffers: db.offers.filter((o) => o.clientId === meId),
@@ -493,7 +763,17 @@ export function MarketplaceProvider({ children }) {
       getWorker: (id) => workerById.get(id) || null,
       getWorkerReviews: (id) => db.reviews.filter((r) => r.workerId === id).map(reviewView),
       myServices: db.services.filter((s) => s.workerUserId === meId),
+      // Raw booking record (BookingDetail/Checkout format the fields they need themselves).
       getBooking: (id) => db.bookings.find((b) => b.id === id) || null,
+      // Every worker profile, unfiltered (on-duty or not, verified or not) — for the admin panel.
+      allWorkers: db.workers,
+      myConversations: myConversationsRaw,
+      unreadMessageCount: myConversationsRaw.reduce((sum, c) => sum + c.unread, 0),
+      getConversation: (id) => myConversationsRaw.find((c) => c.id === id) || null,
+      getMessages: (conversationId) =>
+        db.messages.filter((m) => m.conversationId === conversationId).map((m) => ({ ...m, isMine: m.senderId === meId })),
+      myNotifications: myNotificationsRaw.map(notificationView),
+      unreadNotificationCount: myNotificationsRaw.filter((n) => !n.isRead).length,
     };
   }, [db, jobs, user, meId]);
 
@@ -506,12 +786,19 @@ export function MarketplaceProvider({ children }) {
         postWorkerService,
         upsertWorkerProfile,
         setWorkerDuty,
+        setWorkerVerification,
         createJob,
         applyToJob,
         acceptApplicant,
         createOffer,
         respondToOffer,
         addReview,
+        startConversation,
+        sendMessage,
+        markConversationRead,
+        payForBooking,
+        markNotificationRead,
+        markAllNotificationsRead,
       }}
     >
       {children}

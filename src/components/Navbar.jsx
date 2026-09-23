@@ -1,10 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { Avatar } from "./Avatar";
+import NotificationsBell from "./NotificationsBell";
 import { useAuth } from "../context/AuthContext";
+import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, roles, isAuthenticated, workerEntryPath, logout } = useAuth();
+  const { unreadMessageCount } = useMarketplace();
 
   const isWorker = roles.includes("worker");
   const firstName = user?.name?.split(" ")[0];
@@ -47,9 +51,20 @@ export default function Navbar() {
         </nav>
 
         {/* Right CTA */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4">
           {isAuthenticated ? (
             <>
+              <Link
+                to="/messages"
+                aria-label={`Messages${unreadMessageCount ? `, ${unreadMessageCount} unread` : ""}`}
+                className="relative w-10 h-10 rounded-full flex items-center justify-center text-gray-600! hover:bg-gray-100 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                {unreadMessageCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#FF6B00] ring-2 ring-white" />
+                )}
+              </Link>
+              <NotificationsBell />
               <Link
                 to="/profile"
                 aria-label="My profile and bio"

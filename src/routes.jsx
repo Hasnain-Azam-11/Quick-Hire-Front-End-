@@ -14,6 +14,10 @@ import PublicLayout from './layouts/PublicLayout';
 import Profile from './pages/Profile';
 import MyRequests from './pages/MyRequests';
 import PostCustomJob from './pages/PostCustomJob';
+import Messages from './pages/Messages';
+import Notifications from './pages/Notifications';
+import Checkout from './pages/Checkout';
+import PaymentHistory from './pages/PaymentHistory';
 
 // ===== WORKER PAGES =====
 import WorkerLayout from './layouts/WorkerLayout';
@@ -28,12 +32,20 @@ import WorkerSettings from './pages/worker/WorkerSettings';
 
 // ===== OTHER PAGES =====
 import BookingDetail from './pages/BookingDetail';
-import Review from './pages/Review';
-import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardRedirect from './components/DashboardRedirect';
 import RedirectKeepSearch from './components/RedirectKeepSearch';
 import LegacyClientRedirect from './components/LegacyClientRedirect';
+
+// ===== ADMIN PAGES =====
+import AdminLayout from './layouts/AdminLayout';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+import AdminSignIn from './pages/admin/AdminSignIn';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminVerifications from './pages/admin/AdminVerifications';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminJobs from './pages/admin/AdminJobs';
+import AdminUsers from './pages/admin/AdminUsers';
 
 // ===== ROUTER =====
 export const router = createBrowserRouter([
@@ -91,6 +103,11 @@ export const router = createBrowserRouter([
           { path: '/my-requests', element: <MyRequests /> },
           { path: '/post-job', element: <PostCustomJob /> },
           { path: '/bookings/:id', element: <BookingDetail /> },
+          { path: '/checkout/:bookingId', element: <Checkout /> },
+          { path: '/payments', element: <PaymentHistory /> },
+          { path: '/messages', element: <Messages /> },
+          { path: '/messages/:conversationId', element: <Messages /> },
+          { path: '/notifications', element: <Notifications /> },
         ],
       },
     ],
@@ -161,27 +178,33 @@ export const router = createBrowserRouter([
   },
 
   // ============================
-  // 4. ADMIN ROUTES
+  // 4. ADMIN ROUTES (separate mock session — see AdminAuthContext)
   // ============================
-  {
-    path: '/admin/dashboard',
-    element: <AdminDashboard />,
-  },
   {
     path: '/admin/login',
-    element: <SignIn />,
+    element: <AdminSignIn />,
   },
-
-  // ============================
-  // 5. OTHER ROUTES
-  // ============================
   {
-    path: '/review/:id',
-    element: <Review />,
+    element: <AdminProtectedRoute />,
+    children: [
+      {
+        path: '/admin',
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Navigate to="/admin/dashboard" replace /> },
+          { path: 'dashboard', element: <AdminDashboard /> },
+          { path: 'verifications', element: <AdminVerifications /> },
+          { path: 'categories', element: <AdminCategories /> },
+          { path: 'jobs', element: <AdminJobs /> },
+          { path: 'users', element: <AdminUsers /> },
+          { path: '*', element: <Navigate to="/admin/dashboard" replace /> },
+        ],
+      },
+    ],
   },
 
   // ============================
-  // 6. FALLBACK (404)
+  // 5. FALLBACK (404)
   // ============================
   {
     path: '*',

@@ -1,9 +1,10 @@
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Calendar, MapPin, Wallet2 } from 'lucide-react';
 import { Avatar } from '../components/Avatar';
 import { CategoryChip } from '../components/CategoryChip';
 import { StarRating } from '../components/StarRating';
 import { Button } from '../components/Button';
+import { StatusPill } from '../components/StatusPill';
 import PageShell from '../components/PageShell';
 import { useAuth } from '../context/AuthContext';
 import { useMarketplace } from '../context/MarketplaceContext';
@@ -25,8 +26,9 @@ const statusLabels = {
 
 export default function BookingDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const { getBooking, getWorker } = useMarketplace();
+  const { getBooking, getWorker, startConversation } = useMarketplace();
 
   const booking = getBooking(id);
 
@@ -49,6 +51,12 @@ export default function BookingDetail() {
   const end = endDateFor(booking.startDate, booking.durationType, booking.durationCount);
   const isPermanent = booking.durationType === 'permanent';
   const total = booking.total ?? calcTotal(booking.rate, booking.durationType, booking.durationCount);
+  const isPaid = booking.paymentStatus === 'paid';
+
+  const handleMessage = () => {
+    const conversationId = startConversation(booking.workerId, booking.workerName);
+    if (conversationId) navigate(`/messages/${conversationId}`);
+  };
 
   const timeline = [
     { label: booking.source === 'offer' ? 'Hire request sent' : 'Job posted', date: formatDate(booking.createdAt), completed: true },
@@ -126,7 +134,7 @@ export default function BookingDetail() {
                     <Link to={`/worker-profile/${booking.workerId}`}>
                       <Button variant="outline" className="text-sm">View Profile</Button>
                     </Link>
-                    <Button variant="ghost" className="text-sm" disabled title="Messaging is coming soon">
+                    <Button variant="ghost" className="text-sm" onClick={handleMessage}>
                       Send Message
                     </Button>
                   </div>
@@ -180,6 +188,42 @@ export default function BookingDetail() {
                   <span className="text-xl text-[#FF6B00]">{formatPKR(total)}</span>
                 </div>
               </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl">Payment</h2>
+                <StatusPill status={isPaid ? 'confirmed' : 'pending'}>{isPaid ? 'PAID' : 'UNPAID'}</StatusPill>
+              </div>
+
+              {isPaid ? (
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <span className="text-gray-600">Method</span>
+                    <span className="font-semibold">{booking.paymentMethod}</span>
+                  </div>
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <span className="text-gray-600">Transaction ID</span>
+                    <span className="font-mono text-xs">{booking.transactionId}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Paid on</span>
+                    <span>{formatDate(booking.paidAt)}</span>
+                  </div>
+                </div>
+              ) : user?.id === booking.clientId ? (
+                <>
+                  <p className="text-sm text-gray-500 mb-4">Pay {formatPKR(total)} to confirm this booking.</p>
+                  <Link to={`/checkout/${booking.id}`}>
+                    <Button variant="primary" fullWidth className="gap-2">
+                      <Wallet2 size={18} />
+                      Pay Now
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">Waiting for the client to pay.</p>
+              )}
             </div>
           </div>
         </div>

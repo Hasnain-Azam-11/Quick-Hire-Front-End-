@@ -146,7 +146,7 @@ export default function SignIn() {
       </p>
 
       <p className="mt-3 text-center">
-        <Link to="/admin/dashboard" className="text-xs text-gray-400! hover:text-[#FF6B00]!">
+        <Link to="/admin/login" className="text-xs text-gray-400! hover:text-[#FF6B00]!">
           Admin Login
         </Link>
       </p>

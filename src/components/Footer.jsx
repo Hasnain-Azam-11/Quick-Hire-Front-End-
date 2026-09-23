@@ -34,7 +34,7 @@ const footerColumns = [
     links: [
       { label: "Help Center", to: "/sign-in" },
       { label: "Contact Us", to: "/sign-in" },
-      { label: "Admin Login", to: "/admin/dashboard" },
+      { label: "Admin Login", to: "/admin/login" },
     ],
   },
 ];

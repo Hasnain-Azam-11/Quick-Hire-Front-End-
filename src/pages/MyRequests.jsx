@@ -8,11 +8,14 @@ import { Button } from '../components/Button';
 import { Avatar } from '../components/Avatar';
 import PageShell from '../components/PageShell';
 import JobsStatusNotice from '../components/JobsStatusNotice';
-import { ChevronDown, ChevronUp, UserCheck, Star, X, CheckCircle2, Briefcase } from 'lucide-react';
+import { ChevronDown, ChevronUp, UserCheck, Star, X, CheckCircle2, Briefcase, Wallet2 } from 'lucide-react';
 import { formatDate, formatDuration, formatPayRange, formatPKR, timeAgo } from '../constants/hiring';
+import { useMarketplace } from '../context/MarketplaceContext';
 
 export default function MyRequests() {
   const { clientJobs, jobsStatus, refreshJobs, sentOffers, acceptApplicant, addReview } = useClientData();
+  const { myBookingsAsClient } = useMarketplace();
+  const bookingById = new Map(myBookingsAsClient.map((b) => [b.id, b]));
 
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') === 'offers' ? 'offers' : 'jobs');
@@ -116,9 +119,22 @@ export default function MyRequests() {
                     <span>Start: <strong className="text-gray-800">{formatDate(offer.startDate)}</strong></span>
                   </div>
                   {offer.status === 'accepted' && offer.bookingId && (
-                    <Link to={`/bookings/${offer.bookingId}`} className="text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">
-                      Accepted, view booking
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link to={`/bookings/${offer.bookingId}`} className="text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">
+                        Accepted, view booking
+                      </Link>
+                      {bookingById.get(offer.bookingId)?.paymentStatus === 'paid' ? (
+                        <StatusPill status="confirmed">PAID</StatusPill>
+                      ) : (
+                        <Link
+                          to={`/checkout/${offer.bookingId}`}
+                          className="inline-flex items-center gap-1 text-[#FF6B00]! font-semibold bg-[#FFF0E6] px-3 py-1 rounded-full"
+                        >
+                          <Wallet2 className="w-3.5 h-3.5" />
+                          Pay Now
+                        </Link>
+                      )}
+                    </div>
                   )}
                   {offer.status === 'pending' && <span className="text-[#F59E0B] font-medium">Waiting for the worker's reply</span>}
                   {offer.status === 'declined' && <span className="text-[#EF4444] font-medium">The worker declined this request</span>}

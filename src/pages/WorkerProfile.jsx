@@ -21,7 +21,7 @@ export default function WorkerProfile() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const { getWorker, getWorkerReviews } = useMarketplace();
+  const { getWorker, getWorkerReviews, startConversation } = useMarketplace();
   const [hiring, setHiring] = useState(false);
 
   const worker = getWorker(id);
@@ -49,6 +49,15 @@ export default function WorkerProfile() {
   const handleHire = () => {
     if (isAuthenticated) {
       setHiring(true);
+    } else {
+      navigate('/sign-in', { state: { from: location.pathname } });
+    }
+  };
+
+  const handleMessage = () => {
+    if (isAuthenticated) {
+      const id = startConversation(worker.userId, worker.name);
+      if (id) navigate(`/messages/${id}`);
     } else {
       navigate('/sign-in', { state: { from: location.pathname } });
     }
@@ -110,15 +119,16 @@ export default function WorkerProfile() {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    disabled
-                    title="Messaging is coming soon"
-                    className="gap-2"
-                  >
-                    <MessageCircle size={18} />
-                    Message
-                  </Button>
+                  {!isOwnProfile && (
+                    <Button
+                      variant="outline"
+                      className="border-white text-white hover:bg-white hover:text-[#0A0A0A] gap-2"
+                      onClick={handleMessage}
+                    >
+                      <MessageCircle size={18} />
+                      Message
+                    </Button>
+                  )}
                   {hireButton}
                 </div>
               </div>

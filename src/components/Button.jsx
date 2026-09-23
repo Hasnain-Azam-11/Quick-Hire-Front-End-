@@ -1,5 +1,3 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
-
 export function Button({ variant = 'primary', children, fullWidth, className = '', disabled, ...props }) {
   const baseStyles = 'px-6 py-3 rounded-xl transition-all duration-200 inline-flex items-center justify-center gap-2';
 

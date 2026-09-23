@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
-  Bell,
   Briefcase,
   Calendar,
   ChevronDown,
@@ -11,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageCircle,
   Search,
   Settings,
   Star,
@@ -19,8 +19,10 @@ import {
   X,
 } from "lucide-react";
 import { Avatar } from "../Avatar";
+import NotificationsBell from "../NotificationsBell";
 import { useAuth } from "../../context/AuthContext";
 import { useWorkerData } from "../../context/WorkerDataContext";
+import { useMarketplace } from "../../context/MarketplaceContext";
 
 const NAV_ITEMS = [
   { to: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -51,6 +53,7 @@ export default function WorkerTopNav() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { profile, pendingOfferCount, setWorkerDuty } = useWorkerData();
+  const { unreadMessageCount } = useMarketplace();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef(null);
@@ -131,15 +134,17 @@ export default function WorkerTopNav() {
           <div className="hidden sm:block">{dutyChip}</div>
 
           <Link
-            to="/worker/offers"
-            aria-label={`Hire requests${pendingOfferCount ? `, ${pendingOfferCount} pending` : ""}`}
+            to="/messages"
+            aria-label={`Messages${unreadMessageCount ? `, ${unreadMessageCount} unread` : ""}`}
             className="relative w-10 h-10 rounded-full flex items-center justify-center text-gray-600! hover:bg-gray-100 transition-colors"
           >
-            <Bell className="w-5 h-5" />
-            {pendingOfferCount > 0 && (
+            <MessageCircle className="w-5 h-5" />
+            {unreadMessageCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#FF6B00] ring-2 ring-white" />
             )}
           </Link>
+
+          <NotificationsBell />
 
           <div className="relative" ref={menuRef}>
             <button

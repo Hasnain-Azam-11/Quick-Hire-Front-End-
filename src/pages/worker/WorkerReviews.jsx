@@ -1,6 +1,6 @@
 import { useWorkerData } from '../../context/WorkerDataContext';
 import { StarRating } from '../../components/StarRating';
-import { Star, ThumbsUp, Award, MessageSquare } from 'lucide-react';
+import { ThumbsUp, Award } from 'lucide-react';
 import { Avatar } from '../../components/Avatar';
 
 export default function WorkerReviews() {

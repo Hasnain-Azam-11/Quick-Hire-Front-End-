@@ -169,6 +169,9 @@ export function AuthProvider({ children }) {
     });
   }, []);
 
+  // Every account registered on this browser (admin panel's Users list — no backend user list yet).
+  const getAllUsers = useCallback(() => readUsers(), []);
+
   const roles = user?.roles ?? [];
   const workerEntryPath = !user
     ? '/register?redirect=/become-worker'
@@ -191,6 +194,7 @@ export function AuthProvider({ children }) {
         updateProfile,
         addRole,
         switchRole,
+        getAllUsers,
       }}
     >
       {children}
