@@ -8,6 +8,8 @@ export function useClientData() {
     jobsStatus: m.jobsStatus,
     refreshJobs: m.refreshJobs,
     workers: m.listedWorkers,
+    workersStatus: m.workersStatus,
+    refreshWorkers: m.refreshWorkers,
     clientReviews: m.clientReviews,
     sentOffers: m.sentOffers,
     postJob: m.createJob,

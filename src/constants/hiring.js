@@ -10,8 +10,7 @@ const PERMANENT = { value: 'permanent', label: 'Permanent', plural: 'Permanent',
 export const DURATION_TYPES = [DAY, WEEK, MONTH, PERMANENT];
 
 // Job posting offers more ways to say how long the help is needed than the hire flow above:
-// hours, years, permanent work, and "one-off" jobs. A one-off job has a single flat price and is called
-// an event, a task or a session depending on the category. Years are paid per month.
+// hours, years, permanent work, and "one-off" jobs (an event, a task or a session depending on the category).
 const HOUR = { value: 'hour', label: 'Hour', plural: 'Hours', unit: 'hour' };
 const YEAR = { value: 'year', label: 'Year', plural: 'Years', unit: 'month' };
 const EVENT = { value: 'event', label: 'Event', plural: 'Event', unit: 'event' };
@@ -43,35 +42,17 @@ export function payUnitFor(type) {
   return JOB_DURATION_TYPES.find((d) => d.value === type)?.unit || 'day';
 }
 
-// Lets pay quoted per hour / day / week / month be compared on one scale (8-hour day, 6-day week, 24-day month).
-export function dailyEquivalent(amount, unit) {
-  const value = Number(amount) || 0;
-  if (unit === 'hour') return value * 8;
-  return value / (unit === 'week' ? 6 : unit === 'month' ? 24 : 1);
-}
-
 export function rateForDuration(rates, type) {
   return Number(rates?.[payUnitFor(type)]) || 0;
 }
 
-// The label for the price field: what the client offers, and per what.
-export function priceLabel(type) {
-  const unit = payUnitFor(type);
-  return isOneOff(type) ? `Your offered price (PKR for the ${unit})` : `Your offered price (PKR / ${unit})`;
-}
-
-// Permanent hires quote a monthly salary and a one-off job has one flat price, so the "total" is just the rate.
+// Permanent hires quote a monthly salary and a one-off job has one flat rate, so the "total" is just the rate.
 // Years are priced per month.
 export function calcTotal(rate, type, count) {
   const r = Number(rate) || 0;
   if (type === 'permanent' || isOneOff(type)) return r;
   if (type === 'year') return r * 12 * (Number(count) || 1);
   return r * (Number(count) || 1);
-}
-
-// "PKR 30,000" when a job has one price, "PKR 1,500 - 2,500" when it has a range.
-export function formatPayRange(min, max) {
-  return Number(min) === Number(max) ? formatPKR(min) : `${formatPKR(min)} - ${(Number(max) || 0).toLocaleString()}`;
 }
 
 export function formatPKR(amount) {

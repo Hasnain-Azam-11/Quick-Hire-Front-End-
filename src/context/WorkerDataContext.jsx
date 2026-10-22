@@ -17,6 +17,7 @@ export function useWorkerData() {
     respondToOffer: m.respondToOffer,
     setWorkerDuty: m.setWorkerDuty,
     services: m.myServices,
+    servicesStatus: m.servicesStatus,
     postService: m.postWorkerService,
   };
 }

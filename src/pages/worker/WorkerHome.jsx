@@ -24,7 +24,7 @@ import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { CategoryChip } from '../../components/CategoryChip';
 import { StatusPill } from '../../components/StatusPill';
-import { formatDate, formatDuration, formatPayRange, formatPKR, parseDate, timeAgo } from '../../constants/hiring';
+import { formatDate, formatDuration, formatPKR, parseDate, timeAgo } from '../../constants/hiring';
 
 const TABS = [
   { id: 'requests', label: 'Hire Requests', icon: Inbox },
@@ -428,7 +428,16 @@ export default function WorkerHome() {
                           <h3 className="font-bold text-[#0A0A0A] truncate">{job.title}</h3>
                           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-1">
                             <CategoryChip variant="orange">{job.category}</CategoryChip>
-                            <span>{job.clientName}</span>
+                            <span className="flex items-center gap-1">
+                              <Avatar src={job.clientPicture} name={job.clientName} size="sm" />
+                              {job.clientName}
+                              {job.clientRating > 0 && (
+                                <span className="flex items-center gap-0.5 text-amber-600 font-semibold">
+                                  <Star className="w-3 h-3 fill-current" />
+                                  {job.clientRating.toFixed(1)}
+                                </span>
+                              )}
+                            </span>
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3 h-3" />
                               {job.city}{job.area ? `, ${job.area}` : ''}
@@ -436,10 +445,7 @@ export default function WorkerHome() {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <div className="font-bold text-[#FF6B00] text-sm">
-                            {formatPayRange(job.payMin, job.payMax)}
-                          </div>
-                          <div className="text-[11px] text-gray-400">per {job.payUnit} • {job.duration}</div>
+                          <div className="text-[11px] text-gray-400">{job.duration}</div>
                         </div>
                       </div>
                       <p className="text-xs text-gray-600 line-clamp-2">{job.description}</p>

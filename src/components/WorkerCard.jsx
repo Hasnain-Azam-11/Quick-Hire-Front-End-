@@ -8,12 +8,9 @@ import { CategoryChip } from './CategoryChip';
 import { StarRating } from './StarRating';
 import HireModal from './HireModal';
 
+// The backend stores one flat asking rate per service (no day/week/month tiers, no unit).
 function startingRate(worker) {
-  const { day, week, month } = worker.rates || {};
-  if (day) return { amount: day, unit: 'day' };
-  if (week) return { amount: week, unit: 'week' };
-  if (month) return { amount: month, unit: 'month' };
-  return null;
+  return worker.rate ? { amount: worker.rate } : null;
 }
 
 // One worker in a list. Signed-in users hire in a modal; guests are sent to sign in
@@ -77,7 +74,7 @@ export default function WorkerCard({ worker }) {
         <div className="text-xs">
           <span className="text-gray-400 block">Starting from</span>
           <span className="font-bold text-[#FF6B00] text-sm">
-            {rate ? `PKR ${rate.amount.toLocaleString()} / ${rate.unit}` : 'On request'}
+            {rate ? `PKR ${rate.amount.toLocaleString()}` : 'On request'}
           </span>
         </div>
 

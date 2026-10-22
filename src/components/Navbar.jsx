@@ -34,9 +34,6 @@ export default function Navbar() {
           <a href="/#services" className="hover:text-[#FF6B00] transition-colors">
             Services
           </a>
-          <Link to="/workers" className="hover:text-[#FF6B00] transition-colors">
-            Find Workers
-          </Link>
           {isAuthenticated && (
             <Link to="/my-requests" className="hover:text-[#FF6B00] transition-colors">
               My Requests

@@ -9,7 +9,7 @@ import { describeApiError } from '../api/auth';
 import { BACKEND_CATEGORIES } from '../api/categories';
 import { CITIES } from '../constants/categories';
 import DurationPicker from '../components/DurationPicker';
-import { dateLabelFor, findCategory, isOneOff, priceLabel, todayISO } from '../constants/hiring';
+import { dateLabelFor, findCategory, isOneOff, todayISO } from '../constants/hiring';
 import { durationRulesFor, sanitizeDuration } from '../constants/durationRules';
 
 const selectClass = (error) =>
@@ -39,7 +39,6 @@ function validate(form) {
     const n = Number(form.durationCount);
     if (!Number.isInteger(n) || n < 1) errors.durationCount = 'Enter a whole number, 1 or more.';
   }
-  if (!(Number(form.price) > 0)) errors.price = 'Enter the price you are offering.';
   return errors;
 }
 
@@ -54,7 +53,6 @@ export default function PostCustomJob() {
     description: '',
     city: CITIES[0],
     area: '',
-    price: '',
     durationType: durationRulesFor(findCategory(BACKEND_CATEGORIES[0])?.value).oneOff.type,
     durationCount: 1,
     startDate: '',
@@ -104,7 +102,6 @@ export default function PostCustomJob() {
         description: fields.job_description,
         city: fields.city,
         area: fields.area,
-        price: fields.price,
         startDate: fields.start_date,
         durationCount: fields.duration,
       });
@@ -192,25 +189,15 @@ export default function PostCustomJob() {
             />
           </Labelled>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label={isOneOff(formData.durationType) ? dateLabelFor(formData.durationType) : 'Expected Start Date'}
-              type="date"
-              min={todayISO()}
-              value={formData.startDate}
-              onChange={(e) => set({ startDate: e.target.value })}
-              error={errors.startDate}
-            />
-            <Input
-              label={priceLabel(formData.durationType)}
-              type="number"
-              min="0"
-              placeholder="e.g. 2000"
-              value={formData.price}
-              onChange={(e) => set({ price: e.target.value })}
-              error={errors.price}
-            />
-          </div>
+          <Input
+            label={isOneOff(formData.durationType) ? dateLabelFor(formData.durationType) : 'Expected Start Date'}
+            type="date"
+            min={todayISO()}
+            value={formData.startDate}
+            onChange={(e) => set({ startDate: e.target.value })}
+            error={errors.startDate}
+          />
+          <p className="text-xs text-gray-500">Workers will send you their price after you post.</p>
         </div>
 
         <div className="pt-4 border-t flex justify-end">

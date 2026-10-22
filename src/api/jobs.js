@@ -1,13 +1,12 @@
 import client from './client';
 import { fromBackendCategory, toBackendCategory } from './categories';
-import { isOneOff, payUnitFor } from '../constants/hiring';
+import { isOneOff } from '../constants/hiring';
+import { mediaUrl } from '../utils/media';
 
-// Client.JobPost: job_description, city, area, category, price, duration (free text), start_date, status.
-// The model has no title, services or price unit, so those are folded into the text fields:
+// Client.JobPost: job_description, city, area, category, duration (free text), start_date, status.
+// The model has no title or services, so those are folded into the text fields:
 //   job_description = "Title: ...\nServices: A, B\n\n<description>"
 //   duration        = "3 months" | "1 day" | "2 years" | "Event" | "Task" | "Session" | "Permanent"
-//   price           = the amount offered per hour / day / week / month (the unit follows the duration;
-//                     years are paid per month, an event has one flat price)
 export const JOB_ENDPOINT = '/Client/jobs/';
 
 const STATUS_LABELS = { open: 'Open', assigned: 'Assigned', completed: 'Completed', cancelled: 'Cancelled' };
@@ -63,7 +62,6 @@ export function jobToApi(form) {
     city: form.city,
     area: form.area.trim(),
     category: toBackendCategory(form.category),
-    price: Number(form.price),
     duration: encodeDuration(form.durationType, form.durationCount),
     start_date: form.startDate,
   };
@@ -73,23 +71,23 @@ export function jobToApi(form) {
 export function jobFromApi(api, viewer) {
   const { title, services, description } = decodeDescription(api.job_description);
   const { durationType, durationCount } = decodeDuration(api.duration);
-  const price = Number(api.price) || 0;
   const isMine = viewer.clientProfileId != null && api.client === viewer.clientProfileId;
 
   return {
     id: api.id,
     isMine,
     clientId: isMine ? viewer.id : `client-${api.client}`,
-    clientName: isMine ? viewer.name : `Client #${api.client}`,
+    // client_username/picture/rating (task 8) - fall back to the old placeholder for a job
+    // posted before task 8 shipped, or if the owner account was since deleted.
+    clientName: isMine ? viewer.name : api.client_username || `Client #${api.client}`,
+    clientPicture: mediaUrl(api.client_picture),
+    clientRating: Number(api.client_rating) || 0,
     clientType: 'Client',
     title: title || (services.length ? `${services.join(' / ')} needed` : `${fromBackendCategory(api.category)} help needed`),
     services,
     category: fromBackendCategory(api.category),
     city: api.city,
     area: api.area,
-    payMin: price,
-    payMax: price,
-    payUnit: durationType ? payUnitFor(durationType) : 'day',
     durationType,
     durationCount,
     durationText: api.duration,

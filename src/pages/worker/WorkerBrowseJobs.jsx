@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { useWorkerData } from '../../context/WorkerDataContext';
 import { CategoryChip } from '../../components/CategoryChip';
 import JobsStatusNotice from '../../components/JobsStatusNotice';
+import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
-import { Filter, Users, Search, CheckCircle2 } from 'lucide-react';
+import { Filter, Users, Search, CheckCircle2, Star } from 'lucide-react';
 import { CATEGORIES, CITIES } from '../../constants/categories';
-import { JOB_DURATION_TYPES, dailyEquivalent, formatDate, formatPayRange, isOneOff } from '../../constants/hiring';
-
-// Pay is compared per day (an hour counts as 8 per day), so the slider has to reach hourly rates too.
-const MAX_PAY = 20000;
+import { JOB_DURATION_TYPES, formatDate, isOneOff } from '../../constants/hiring';
 
 const categories = ['All', ...CATEGORIES];
 const cities = ['All Cities', ...CITIES];
@@ -21,19 +19,17 @@ export default function WorkerBrowseJobs() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedCity, setSelectedCity] = useState('All Cities');
   const [selectedDuration, setSelectedDuration] = useState('All');
-  const [maxPay, setMaxPay] = useState(MAX_PAY);
 
   const filteredJobs = jobs.filter((job) => {
     const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
     const matchesCity = selectedCity === 'All Cities' || job.city === selectedCity;
     const matchesDuration = selectedDuration === 'All' || job.durationType === selectedDuration;
-    const matchesPay = dailyEquivalent(job.payMin, job.payUnit) <= maxPay;
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesCategory && matchesCity && matchesDuration && matchesPay && matchesSearch;
+    return matchesCategory && matchesCity && matchesDuration && matchesSearch;
   });
 
   return (
@@ -96,27 +92,6 @@ export default function WorkerBrowseJobs() {
               </select>
             </div>
 
-            {/* Pay Range Filter */}
-            <div>
-              <div className="flex justify-between text-xs font-semibold text-gray-700 mb-2">
-                <span>Max Pay Rate</span>
-                <span className="text-[#FF6B00]">{maxPay >= MAX_PAY ? 'Any' : `Up to PKR ${maxPay.toLocaleString()}/day`}</span>
-              </div>
-              <input
-                type="range"
-                min="1000"
-                max={MAX_PAY}
-                step="500"
-                value={maxPay}
-                onChange={(e) => setMaxPay(parseInt(e.target.value))}
-                className="w-full accent-[#FF6B00]"
-              />
-              <div className="flex justify-between text-[11px] text-gray-500 mt-1">
-                <span>PKR 1,000</span>
-                <span>PKR {MAX_PAY.toLocaleString()}</span>
-              </div>
-            </div>
-
             {/* Duration Filter */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-2">Duration</label>
@@ -141,7 +116,6 @@ export default function WorkerBrowseJobs() {
                 setSelectedCategory('All');
                 setSelectedCity('All Cities');
                 setSelectedDuration('All');
-                setMaxPay(MAX_PAY);
               }}
             >
               Reset All Filters
@@ -181,8 +155,15 @@ export default function WorkerBrowseJobs() {
                       <h3 className="text-xl font-bold text-[#0A0A0A] mb-2">{job.title}</h3>
                       <div className="flex flex-wrap items-center gap-2 text-xs">
                         <CategoryChip variant="orange">{job.category}</CategoryChip>
-                        <span className="px-3 py-1 bg-gray-100 rounded-full font-medium text-gray-700">
-                          Client: {job.clientName} ({job.clientType})
+                        <span className="flex items-center gap-1.5 pl-1 pr-3 py-1 bg-gray-100 rounded-full font-medium text-gray-700">
+                          <Avatar src={job.clientPicture} name={job.clientName} size="sm" />
+                          {job.clientName}
+                          {job.clientRating > 0 && (
+                            <span className="flex items-center gap-0.5 text-amber-600 font-semibold">
+                              <Star className="w-3 h-3 fill-current" />
+                              {job.clientRating.toFixed(1)}
+                            </span>
+                          )}
                         </span>
                         <span className="text-gray-500 font-medium">{job.city}, {job.area}</span>
                       </div>
@@ -191,13 +172,7 @@ export default function WorkerBrowseJobs() {
 
                   <p className="text-gray-600 text-sm leading-relaxed">{job.description}</p>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-[#F5F5F5] rounded-xl text-xs">
-                    <div>
-                      <div className="text-gray-500 mb-0.5">Pay Rate</div>
-                      <div className="font-bold text-[#FF6B00] text-sm">
-                        {formatPayRange(job.payMin, job.payMax)}/{job.payUnit}
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-[#F5F5F5] rounded-xl text-xs">
                     <div>
                       <div className="text-gray-500 mb-0.5">Duration</div>
                       <div className="font-semibold text-gray-800 text-sm">{job.duration}</div>

@@ -15,10 +15,10 @@ import ClientReviewsPanel from '../components/ClientReviewsPanel';
 import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
 import { CategoryChip } from '../components/CategoryChip';
-import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { formatDate } from '../constants/hiring';
+import { mediaUrl } from '../utils/media';
 
 function InfoRow({ icon: Icon, label, children }) {
   return (
@@ -55,9 +55,6 @@ function ActivityLink({ to, icon: Icon, label, count }) {
   );
 }
 
-// The profile picture comes back from the API as a path like /media/client_profiles/me.jpg.
-const pictureUrl = (path) => (!path ? undefined : /^https?:/.test(path) ? path : `${client.defaults.baseURL}${path}`);
-
 // "My profile": opened by clicking your name in the navbar. It shows the client profile the
 // backend keeps for this account (picture, phone, rating) next to the account's username and email.
 export default function Profile() {
@@ -70,7 +67,7 @@ export default function Profile() {
   return (
     <PageShell>
       <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-6">
-        <Avatar name={user.name || 'Me'} src={pictureUrl(user.profilePicture)} size="xl" />
+        <Avatar name={user.name || 'Me'} src={mediaUrl(user.profilePicture)} size="xl" />
         <div className="flex-1 min-w-0 space-y-2">
           <h1 className="text-3xl font-extrabold text-[#0A0A0A] break-words">{user.name}</h1>
           <div className="text-gray-500 text-sm">@{user.username}</div>

@@ -4,19 +4,19 @@ import { Navigate, useLocation } from 'react-router-dom';
 const TARGETS = {
   jobs: '/my-requests',
   'post-job': '/post-job',
-  workers: '/workers',
+  workers: '/categories/driving?view=workers&category=All',
   reviews: '/profile',
   settings: '/profile',
   bookings: '/my-requests',
 };
 
 export default function LegacyClientRedirect() {
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const rest = pathname.replace(/^\/client\/?/, '');
 
   let to = '/';
   if (rest.startsWith('bookings/')) to = `/${rest}`;
   else if (TARGETS[rest]) to = TARGETS[rest];
 
-  return <Navigate to={to === '/workers' ? `${to}${search}` : to} replace />;
+  return <Navigate to={to} replace />;
 }

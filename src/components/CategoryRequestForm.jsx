@@ -7,7 +7,7 @@ import { useMarketplace } from '../context/MarketplaceContext';
 import { describeApiError } from '../api/auth';
 import { CITIES } from '../constants/categories';
 import DurationPicker from './DurationPicker';
-import { dateLabelFor, isOneOff, priceLabel, subcategoriesFor, todayISO } from '../constants/hiring';
+import { dateLabelFor, isOneOff, subcategoriesFor, todayISO } from '../constants/hiring';
 import { durationRulesFor, sanitizeDuration } from '../constants/durationRules';
 import { clearJobDraft, loadJobDraft, saveJobDraft } from '../utils/jobDraft';
 
@@ -19,7 +19,6 @@ const EMPTY_FORM = {
   durationType: 'event',
   durationCount: 1,
   startDate: '',
-  price: '',
 };
 
 const controlClass = (error) =>
@@ -51,7 +50,6 @@ function validate(form) {
     const n = Number(form.durationCount);
     if (!Number.isInteger(n) || n < 1) errors.durationCount = 'Enter a whole number, 1 or more.';
   }
-  if (!(Number(form.price) > 0)) errors.price = 'Enter the price you are offering.';
   if (!form.area.trim()) errors.area = 'Enter your area or neighbourhood.';
   return errors;
 }
@@ -120,7 +118,6 @@ export default function CategoryRequestForm({ category, onBrowseWorkers }) {
         description: fields.job_description,
         city: fields.city,
         area: fields.area,
-        price: fields.price,
         startDate: fields.start_date,
         durationCount: fields.duration,
       });
@@ -233,27 +230,17 @@ export default function CategoryRequestForm({ category, onBrowseWorkers }) {
         />
       </Field>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        <Field label={dateLabelFor(form.durationType)} error={errors.startDate}>
-          <input
-            type="date"
-            min={todayISO()}
-            value={form.startDate}
-            onChange={(e) => set({ startDate: e.target.value })}
-            className={controlClass(errors.startDate)}
-          />
-        </Field>
-        <Field label={priceLabel(form.durationType)} error={errors.price}>
-          <input
-            type="number"
-            min="0"
-            value={form.price}
-            onChange={(e) => set({ price: e.target.value })}
-            placeholder="e.g. 2000"
-            className={controlClass(errors.price)}
-          />
-        </Field>
-      </div>
+      <Field label={dateLabelFor(form.durationType)} error={errors.startDate}>
+        <input
+          type="date"
+          min={todayISO()}
+          value={form.startDate}
+          onChange={(e) => set({ startDate: e.target.value })}
+          className={controlClass(errors.startDate)}
+        />
+      </Field>
+
+      <p className="text-xs text-gray-500">Workers will send you their price after you post.</p>
 
       <div className="pt-5 border-t border-gray-100 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
         <p className="text-xs text-gray-500">

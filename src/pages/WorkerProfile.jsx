@@ -8,31 +8,30 @@ import { Button } from '../components/Button';
 import HireModal from '../components/HireModal';
 import { useAuth } from '../context/AuthContext';
 import { useMarketplace } from '../context/MarketplaceContext';
-import { formatPKR } from '../constants/hiring';
-
-const RATE_ROWS = [
-  { key: 'day', label: 'Per day' },
-  { key: 'week', label: 'Per week' },
-  { key: 'month', label: 'Per month / permanent' },
-];
+import { findCategory, formatPKR } from '../constants/hiring';
 
 export default function WorkerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  const { getWorker, getWorkerReviews, startConversation } = useMarketplace();
+  const { getWorker, getWorkerReviews, startConversation, workersStatus } = useMarketplace();
   const [hiring, setHiring] = useState(false);
 
   const worker = getWorker(id);
-  const backTo = location.state?.from || '/workers';
+  const categorySlug = findCategory(worker?.category)?.value || 'driving';
+  const defaultBrowseUrl = `/categories/${categorySlug}?view=workers`;
+  const backTo = location.state?.from || defaultBrowseUrl;
 
   if (!worker) {
+    if (workersStatus.state === 'loading') {
+      return <div className="max-w-md mx-auto py-24 px-6 text-center text-gray-500">Loading worker profile...</div>;
+    }
     return (
       <div className="max-w-md mx-auto py-24 px-6 text-center space-y-4">
         <h1 className="text-3xl font-extrabold text-[#0A0A0A]">Worker Not Found</h1>
         <p className="text-gray-500">This profile doesn't exist or has been removed.</p>
-        <Link to="/workers">
+        <Link to="/categories/driving?view=workers&category=All">
           <Button variant="primary" className="gap-2">
             <ArrowLeft size={18} />
             Browse Workers
@@ -43,8 +42,7 @@ export default function WorkerProfile() {
   }
 
   const reviews = getWorkerReviews(worker.id);
-  const isOwnProfile = user?.id === worker.userId;
-  const hasRates = RATE_ROWS.some(({ key }) => worker.rates?.[key]);
+  const isOwnProfile = user?.workerBioId != null && user.workerBioId === worker.workerBioId;
 
   const handleHire = () => {
     if (isAuthenticated) {
@@ -196,15 +194,11 @@ export default function WorkerProfile() {
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="text-xl mb-4">Rates</h2>
-              {hasRates ? (
-                <div className="space-y-3 text-sm">
-                  {RATE_ROWS.filter(({ key }) => worker.rates?.[key]).map(({ key, label }) => (
-                    <div key={key} className="flex items-center justify-between pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                      <span className="text-gray-600">{label}</span>
-                      <span className="font-bold text-[#FF6B00]">{formatPKR(worker.rates[key])}</span>
-                    </div>
-                  ))}
+              <h2 className="text-xl mb-4">Rate</h2>
+              {worker.rate ? (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Asking rate</span>
+                  <span className="font-bold text-[#FF6B00]">{formatPKR(worker.rate)}</span>
                 </div>
               ) : (
                 <p className="text-sm text-gray-500">Rates are agreed when you send a hire request.</p>

@@ -5,16 +5,32 @@ export const ENDPOINTS = {
   login: '/api-token-auth/',
 };
 
-// POST { username, email, password, phone_number } -> created client profile (no token)
+// POST { username, email, password, first_name, last_name, phone_number } -> created client
+// profile (no token). first_name/last_name are required by the backend as of Phase B task 6.
+
 export async function registerClient(payload) {
   const { data } = await client.post(ENDPOINTS.register, payload);
   return data;
 }
 
-// POST { username, password } -> { token }
+// POST { username, password } -> { token, client_profile_id, worker_Bio_id, is_worker } (task 7).
+// Login is the only place that reliably tells us "is this account a worker" on a device/browser
+// that has never seen this account before - the local registry (quickhire_users) doesn't travel.
 export async function requestToken(credentials) {
   const { data } = await client.post(ENDPOINTS.login, credentials);
-  return data.token;
+  return data;
+}
+
+// Backend login response -> the fields AuthContext needs.
+// NOTE: the backend spells this `worker_Bio_id` (capital B) here but `worker_bio_id` (lowercase)
+// on GET /Client/me/ - reading both until Hasnain picks one and fixes the other.
+export function loginFromApi(data) {
+  return {
+    token: data.token,
+    clientProfileId: data.client_profile_id ?? null,
+    workerBioId: data.worker_Bio_id ?? data.worker_bio_id ?? null,
+    isWorker: !!data.is_worker,
+  };
 }
 
 // Turns an axios error into `{ form, fields }`: `form` is a message for the whole form,

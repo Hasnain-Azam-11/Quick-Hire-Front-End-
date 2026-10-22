@@ -6,7 +6,6 @@ import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import WorkerProfile from './pages/WorkerProfile';
 import CategoryPage from './pages/CategoryPage';
-import WorkersPage from './pages/WorkersPage';
 import BecomeWorker from './pages/BecomeWorker';
 import PublicLayout from './layouts/PublicLayout';
 
@@ -34,7 +33,6 @@ import WorkerSettings from './pages/worker/WorkerSettings';
 import BookingDetail from './pages/BookingDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardRedirect from './components/DashboardRedirect';
-import RedirectKeepSearch from './components/RedirectKeepSearch';
 import LegacyClientRedirect from './components/LegacyClientRedirect';
 
 // ===== ADMIN PAGES =====
@@ -73,16 +71,11 @@ export const router = createBrowserRouter([
     element: <CategoryPage />,
   },
   {
-    // Browsing workers and viewing a profile is open to guests; hiring asks them to sign in.
+    // Viewing a worker profile is open to guests; hiring asks them to sign in.
     element: <PublicLayout />,
     children: [
-      { path: '/workers', element: <WorkersPage /> },
       { path: '/worker-profile/:id', element: <WorkerProfile /> },
     ],
-  },
-  {
-    path: '/browse-workers',
-    element: <RedirectKeepSearch to="/workers" />,
   },
   {
     // Any signed-in client can add the worker role; guests are sent to register first.

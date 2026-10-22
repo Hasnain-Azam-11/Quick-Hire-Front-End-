@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useAuth } from './AuthContext';
 import { describeApiError } from '../api/auth';
 import { fetchJobs, jobFromApi, postJob } from '../api/jobs';
-import { createWorkerService } from '../api/worker';
+import { createWorkerService, fetchMyWorkerServices, fetchWorkerListing } from '../api/worker';
 import { fromBackendCategory } from '../api/categories';
 import {
   calcTotal,
@@ -154,6 +154,10 @@ export function MarketplaceProvider({ children }) {
   const [db, setDb] = useState(loadDb);
   const [apiJobs, setApiJobs] = useState([]);
   const [jobsStatus, setJobsStatus] = useState({ state: 'loading', error: '' });
+  const [publicWorkers, setPublicWorkers] = useState([]);
+  const [workersStatus, setWorkersStatus] = useState({ state: 'loading', error: '' });
+  const [apiServices, setApiServices] = useState([]);
+  const [servicesStatus, setServicesStatus] = useState({ state: 'loading', error: '' });
 
   useEffect(() => {
     try {
@@ -193,6 +197,54 @@ export function MarketplaceProvider({ children }) {
       cancelled = true;
     };
   }, [meId]);
+
+  // Public workers listing (GET /worker/browseworkers/), task 9 - no auth needed, loads for guests too.
+  const loadPublicWorkers = useCallback(async () => {
+    setWorkersStatus({ state: 'loading', error: '' });
+    try {
+      setPublicWorkers(await fetchWorkerListing());
+      setWorkersStatus({ state: 'ready', error: '' });
+    } catch (err) {
+      setWorkersStatus({ state: 'error', error: describeApiError(err).form });
+    }
+  }, []);
+
+  // Loads once on mount (public endpoint, works for guests too); `refreshWorkers` retries on demand.
+  useEffect(() => {
+    let cancelled = false;
+    fetchWorkerListing()
+      .then((list) => {
+        if (cancelled) return;
+        setPublicWorkers(list);
+        setWorkersStatus({ state: 'ready', error: '' });
+      })
+      .catch((err) => {
+        if (!cancelled) setWorkersStatus({ state: 'error', error: describeApiError(err).form });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The signed-in worker's own services (GET /worker/workerService/, filtered client-side since
+  // the backend has no "mine" filter on this endpoint).
+  const workerBioId = user?.workerBioId ?? null;
+  useEffect(() => {
+    if (!workerBioId) return undefined;
+    let cancelled = false;
+    fetchMyWorkerServices(workerBioId)
+      .then((list) => {
+        if (cancelled) return;
+        setApiServices(list.map((s) => ({ ...s, category: fromBackendCategory(s.category) })));
+        setServicesStatus({ state: 'ready', error: '' });
+      })
+      .catch((err) => {
+        if (!cancelled) setServicesStatus({ state: 'error', error: describeApiError(err).form });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [workerBioId]);
 
   // Backend jobs in the shape the pages use, plus local-only state (assigned worker, reviewed).
   const jobs = useMemo(() => {
@@ -259,15 +311,16 @@ export function MarketplaceProvider({ children }) {
     return created;
   };
 
-  // POST /worker/workerService/, then remember it here (the list endpoint doesn't say who owns which).
+  // POST /worker/workerService/, then add it to the real list (GET on this endpoint doesn't filter
+  // by owner, so the full list is only re-fetched on sign-in, not after every post).
   const postWorkerService = async (form) => {
     const created = await createWorkerService(form);
-    const service = { ...created, category: fromBackendCategory(created.category), workerUserId: meId };
-    setDb((prev) => ({ ...prev, services: [service, ...prev.services] }));
+    const service = { ...created, category: fromBackendCategory(created.category) };
+    setApiServices((prev) => [service, ...prev]);
     return created;
   };
 
-  const applyToJob = (jobId, proposedRate) => {
+  const applyToJob = (jobId) => {
     const target = jobs.find((j) => j.id === jobId);
     const profile = db.workers.find((w) => w.id === meId);
     if (!user || !target || !profile || target.status !== 'Open' || target.isMine) return;
@@ -278,7 +331,6 @@ export function MarketplaceProvider({ children }) {
       jobId,
       workerId: meId,
       workerName: profile.name || user.name,
-      proposedRate: Number(proposedRate) || Number(profile.rates?.[target.payUnit]) || target.payMin,
       status: 'pending',
       appliedAt: new Date().toISOString(),
     };
@@ -307,9 +359,9 @@ export function MarketplaceProvider({ children }) {
         durationType: target.durationType,
         durationCount: target.durationCount,
         startDate: target.startDate,
-        rate: chosen.proposedRate,
-        payUnit: target.payUnit,
-        total: calcTotal(chosen.proposedRate, target.durationType, target.durationCount),
+        rate: 0,
+        payUnit: payUnitFor(target.durationType),
+        total: 0,
       });
 
       const notifs = prev.applications
@@ -642,7 +694,6 @@ export function MarketplaceProvider({ children }) {
         workerId: a.workerId,
         workerName: a.workerName,
         rating: w?.rating ?? 5,
-        proposedRate: a.proposedRate,
         experience: `${w?.experience ?? 0} yrs`,
         category: w?.category ?? '',
         status: a.status,
@@ -729,7 +780,7 @@ export function MarketplaceProvider({ children }) {
 
     return {
       myWorkerProfile,
-      listedWorkers: db.workers.filter((w) => w.isOnDuty && w.category && w.id !== meId),
+      listedWorkers: publicWorkers.filter((w) => w.isOnDuty && w.workerBioId !== (user?.workerBioId ?? null)),
       myJobs: jobs.filter((j) => j.isMine).map(jobView),
       openJobs: jobs
         .filter((j) => j.status === 'Open' && !j.isMine)
@@ -743,12 +794,8 @@ export function MarketplaceProvider({ children }) {
           clientName: j?.clientName ?? '—',
           category: j?.category ?? '',
           city: j?.city ?? '',
-          payMin: j?.payMin ?? 0,
-          payMax: j?.payMax ?? 0,
-          payUnit: j?.payUnit ?? 'day',
           duration: j ? jobDuration(j) : '—',
           startDate: j?.startDate ?? '',
-          proposedRate: a.proposedRate,
           status: a.status,
           appliedDate: formatDate(a.appliedAt),
         };
@@ -760,9 +807,10 @@ export function MarketplaceProvider({ children }) {
       sentOffers: db.offers.filter((o) => o.clientId === meId),
       clientReviews: db.reviews.filter((r) => r.clientId === meId).map(reviewView),
       workerReviews: db.reviews.filter((r) => r.workerId === meId).map(reviewView),
-      getWorker: (id) => workerById.get(id) || null,
+      // Looks in the public listing (real backend data); reviews stay empty until task 18 ships.
+      getWorker: (id) => publicWorkers.find((w) => String(w.id) === String(id)) || null,
       getWorkerReviews: (id) => db.reviews.filter((r) => r.workerId === id).map(reviewView),
-      myServices: db.services.filter((s) => s.workerUserId === meId),
+      myServices: apiServices,
       // Raw booking record (BookingDetail/Checkout format the fields they need themselves).
       getBooking: (id) => db.bookings.find((b) => b.id === id) || null,
       // Every worker profile, unfiltered (on-duty or not, verified or not) — for the admin panel.
@@ -775,7 +823,7 @@ export function MarketplaceProvider({ children }) {
       myNotifications: myNotificationsRaw.map(notificationView),
       unreadNotificationCount: myNotificationsRaw.filter((n) => !n.isRead).length,
     };
-  }, [db, jobs, user, meId]);
+  }, [db, jobs, user, meId, publicWorkers, apiServices]);
 
   return (
     <MarketplaceContext.Provider
@@ -783,6 +831,9 @@ export function MarketplaceProvider({ children }) {
         ...views,
         jobsStatus,
         refreshJobs: loadJobs,
+        workersStatus,
+        refreshWorkers: loadPublicWorkers,
+        servicesStatus,
         postWorkerService,
         upsertWorkerProfile,
         setWorkerDuty,

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { clearToken, getToken, setToken } from '../api/token';
-import { registerClient, requestToken } from '../api/auth';
+import { loginFromApi, registerClient, requestToken } from '../api/auth';
+import { fetchMe, meFromApi } from '../api/profile';
 
 const AuthContext = createContext(null);
 
@@ -79,28 +80,65 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const startSession = (token, profile) => {
-    setToken(token);
-    setUser(profile);
+  // On a page refresh (a token but a cached user from last time), quietly refresh from
+  // GET /Client/me/ so the profile shown is current. Silently keeps the cached copy if the
+  // backend can't be reached - this must never log the user out just because of a network blip.
+  useEffect(() => {
+    if (!user || !getToken()) return;
+    let cancelled = false;
+    fetchMe()
+      .then((api) => {
+        if (cancelled) return;
+        setUser((prev) => (prev ? normalizeUser({ ...prev, ...meFromApi(api) }) : prev));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // GET /Client/me/ merged over a local fallback (roles/activeRole/city aren't on the backend
+  // yet, so they always come from the fallback), plus the authoritative ids/role from the login
+  // response (`session`, from loginFromApi) - this is what makes "is this a worker account"
+  // correct even on a device/browser that has never seen this account before (the local
+  // registry below doesn't travel). Never throws - falls back to local-only data if the backend
+  // can't be reached, so a flaky connection doesn't block signing in.
+  const withBackendProfile = async (localFallback, session) => {
+    const roles =
+      session?.isWorker && !localFallback.roles.includes('worker')
+        ? [...localFallback.roles, 'worker']
+        : localFallback.roles;
+    const base = {
+      ...localFallback,
+      roles,
+      clientProfileId: session?.clientProfileId ?? localFallback.clientProfileId ?? null,
+      workerBioId: session?.workerBioId ?? localFallback.workerBioId ?? null,
+    };
+    try {
+      return normalizeUser({ ...base, ...meFromApi(await fetchMe()) });
+    } catch {
+      return normalizeUser(base);
+    }
   };
 
   // Signs in against the backend (POST /api-token-auth/). Rejects with the axios error.
   const login = async (username, password) => {
-    const token = await requestToken({ username, password });
-    const profile = normalizeUser(
-      findProfile(username) || {
-        id: username,
-        username,
-        name: username,
-        email: '',
-        phone: '',
-        city: '',
-        accountType: 'individual',
-        roles: ['client'],
-        activeRole: 'client',
-      }
-    );
-    startSession(token, profile);
+    const session = loginFromApi(await requestToken({ username, password }));
+    setToken(session.token);
+    const local = findProfile(username) || {
+      id: username,
+      username,
+      name: username,
+      email: '',
+      phone: '',
+      city: '',
+      accountType: 'individual',
+      roles: ['client'],
+      activeRole: 'client',
+    };
+    const profile = await withBackendProfile(local, session);
+    setUser(profile);
     return profile;
   };
 
@@ -111,19 +149,25 @@ export function AuthProvider({ children }) {
     const username = form.username.trim();
     const email = form.email.trim();
     const phone = form.phone.trim();
+    const firstName = form.firstName.trim();
+    const lastName = form.lastName.trim();
 
     // The response is the new ClientProfile: { id, phone_number, profile_picture, average_rating }.
     const created = await registerClient({
       username,
       email,
       password: form.password,
+      first_name: firstName,
+      last_name: lastName,
       phone_number: phone.replace(/[\s-]/g, ''),
     });
 
-    const profile = normalizeUser({
+    const localFallback = {
       id: username,
       username,
-      name: form.name.trim(),
+      firstName,
+      lastName,
+      name: `${firstName} ${lastName}`.trim(),
       email,
       phone,
       city: '',
@@ -134,13 +178,17 @@ export function AuthProvider({ children }) {
       joinedAt: new Date().toISOString(),
       roles: ['client'],
       activeRole: 'client',
-    });
+    };
 
     try {
-      startSession(await requestToken({ username, password: form.password }), profile);
+      const session = loginFromApi(await requestToken({ username, password: form.password }));
+      setToken(session.token);
+      const profile = await withBackendProfile(localFallback, session);
+      setUser(profile);
       return { user: profile, signedIn: true };
     } catch {
       // Account exists; remember the profile so the next manual sign-in restores the name.
+      const profile = normalizeUser(localFallback);
       writeUsers([...readUsers().filter((u) => u.id !== profile.id), profile]);
       return { user: profile, signedIn: false };
     }

@@ -2,7 +2,7 @@ import { Info } from 'lucide-react';
 import { CategoryChip } from '../../components/CategoryChip';
 import { StatusPill } from '../../components/StatusPill';
 import { useMarketplace } from '../../context/MarketplaceContext';
-import { formatDate, formatPayRange } from '../../constants/hiring';
+import { formatDate } from '../../constants/hiring';
 
 // Jobs need a real backend session to fetch (Django requires an authenticated token), and admin
 // sign-in here is a separate mock session with no such token — so this can only show jobs that
@@ -39,7 +39,6 @@ export default function AdminJobs() {
                 <th className="px-5 py-3 font-semibold">Title</th>
                 <th className="px-5 py-3 font-semibold">Category</th>
                 <th className="px-5 py-3 font-semibold">City</th>
-                <th className="px-5 py-3 font-semibold">Pay</th>
                 <th className="px-5 py-3 font-semibold">Start</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
               </tr>
@@ -50,7 +49,6 @@ export default function AdminJobs() {
                   <td className="px-5 py-3 font-semibold text-[#0A0A0A] max-w-xs truncate">{j.title}</td>
                   <td className="px-5 py-3"><CategoryChip variant="orange">{j.category}</CategoryChip></td>
                   <td className="px-5 py-3 text-gray-600 whitespace-nowrap">{j.city}</td>
-                  <td className="px-5 py-3 text-gray-600 whitespace-nowrap">{formatPayRange(j.payMin, j.payMax)}</td>
                   <td className="px-5 py-3 text-gray-500 whitespace-nowrap">{formatDate(j.startDate)}</td>
                   <td className="px-5 py-3">
                     <StatusPill status={j.status === 'Open' ? 'active' : j.status === 'Assigned' ? 'pending' : 'completed'}>

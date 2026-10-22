@@ -4,12 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkerData } from '../../context/WorkerDataContext';
 import WorkerServiceForm from '../../components/WorkerServiceForm';
 import { CategoryChip } from '../../components/CategoryChip';
+import JobsStatusNotice from '../../components/JobsStatusNotice';
 import { BACKEND_CATEGORIES } from '../../api/categories';
 import { formatDate, formatPKR } from '../../constants/hiring';
 
 export default function WorkerServices() {
   const { user } = useAuth();
-  const { services, profile, postService } = useWorkerData();
+  const { services, servicesStatus, profile, postService } = useWorkerData();
   const [posted, setPosted] = useState(false);
 
   const mainCategory = user?.workerBio?.expertiseCategory || user?.workerBio?.expertiseCategories?.[0] || '';
@@ -40,10 +41,11 @@ export default function WorkerServices() {
         </section>
 
         <section className="xl:col-span-2 space-y-4">
-          <h2 className="text-xl font-bold text-[#0A0A0A]">Services you posted here</h2>
-          {services.length === 0 ? (
+          <h2 className="text-xl font-bold text-[#0A0A0A]">Your services</h2>
+          <JobsStatusNotice status={servicesStatus} label="your services" />
+          {servicesStatus.state !== 'loading' && services.length === 0 ? (
             <p className="text-sm text-gray-500 bg-white rounded-2xl border border-gray-100 p-6">
-              Nothing posted from this device yet.
+              You haven't posted a service yet.
             </p>
           ) : (
             services.map((service) => (

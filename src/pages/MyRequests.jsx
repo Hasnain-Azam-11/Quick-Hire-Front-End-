@@ -9,7 +9,7 @@ import { Avatar } from '../components/Avatar';
 import PageShell from '../components/PageShell';
 import JobsStatusNotice from '../components/JobsStatusNotice';
 import { ChevronDown, ChevronUp, UserCheck, Star, X, CheckCircle2, Briefcase, Wallet2 } from 'lucide-react';
-import { formatDate, formatDuration, formatPayRange, formatPKR, timeAgo } from '../constants/hiring';
+import { formatDate, formatDuration, formatPKR, timeAgo } from '../constants/hiring';
 import { useMarketplace } from '../context/MarketplaceContext';
 
 export default function MyRequests() {
@@ -85,7 +85,7 @@ export default function MyRequests() {
               <p className="text-gray-500 text-sm max-w-md mx-auto">
                 Find a worker you like and hire them for a day, a week, a month or permanently.
               </p>
-              <Link to="/workers">
+              <Link to="/categories/driving?view=workers&category=All">
                 <Button variant="primary" className="text-sm py-2.5 px-6 font-semibold mt-2">Browse Workers</Button>
               </Link>
             </div>
@@ -185,13 +185,6 @@ export default function MyRequests() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <div className="text-left sm:text-right">
-                      <div className="font-bold text-[#FF6B00] text-sm">
-                        {formatPayRange(job.payMin, job.payMax)}
-                      </div>
-                      <div className="text-[11px] text-gray-400">Rate / {job.payUnit}</div>
-                    </div>
-
                     {job.status === 'Open' && (
                       <Button
                         variant="outline"
@@ -260,11 +253,6 @@ export default function MyRequests() {
                           </div>
 
                           <div className="flex items-center gap-4">
-                            <div className="text-right text-xs">
-                              <span className="text-gray-400 block">Proposed Rate</span>
-                              <span className="font-bold text-[#FF6B00] text-sm">PKR {applicant.proposedRate.toLocaleString()} / {job.payUnit}</span>
-                            </div>
-
                             <Button
                               variant="primary"
                               className="text-xs py-2 px-5 font-semibold gap-1.5"

@@ -14,7 +14,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validate(form) {
   const errors = {};
-  if (!form.name.trim()) errors.name = 'Enter your full name.';
+  if (!form.firstName.trim()) errors.firstName = 'Enter your first name.';
+  if (!form.lastName.trim()) errors.lastName = 'Enter your last name.';
   if (!USERNAME_PATTERN.test(form.username)) {
     errors.username = '3-20 characters: letters, numbers, dots or underscores.';
   }
@@ -34,7 +35,8 @@ export default function Register() {
   const redirectTarget = searchParams.get('redirect') || location.state?.from || null;
 
   const [form, setForm] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     username: '',
     email: '',
     phone: '',
@@ -84,6 +86,8 @@ export default function Register() {
     } catch (err) {
       const { form: formError, fields } = describeApiError(err);
       setErrors({
+        firstName: fields.first_name,
+        lastName: fields.last_name,
         username: fields.username,
         email: fields.email,
         password: fields.password,
@@ -118,11 +122,18 @@ export default function Register() {
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <AuthField
-            label="Full Name"
+            label="First Name"
             icon={User}
-            placeholder="Enter your full name"
-            autoComplete="name"
-            {...field('name')}
+            placeholder="Enter your first name"
+            autoComplete="given-name"
+            {...field('firstName')}
+          />
+          <AuthField
+            label="Last Name"
+            icon={User}
+            placeholder="Enter your last name"
+            autoComplete="family-name"
+            {...field('lastName')}
           />
           <AuthField
             label="Username"
